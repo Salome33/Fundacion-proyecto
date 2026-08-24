@@ -1,0 +1,74 @@
+%% Diagrama de casos de uso — VERSIÓN SIMPLE (líneas garantizadas)
+%% Si la versión compleja no muestra flechas, usa esta en https://mermaid.live
+%% IMPORTANTE: copia TODO el archivo, incluidas las líneas C --> y J -->
+
+flowchart TB
+    C(("Coordinador administrativo"))
+    J(("Junta directiva"))
+
+    UC_Login["Iniciar sesión"]
+    UC_Logout["Cerrar sesión"]
+    UC_Inicio["Ver inicio"]
+    UC_Listar["Listar fichas"]
+    UC_Abrir["Abrir ficha"]
+    UC_Explorar["Explorar apartados"]
+    UC_ConsultarAp["Consultar apartado"]
+    UC_Calendario["Ver calendario"]
+    UC_VerSignos["Ver signos vitales"]
+    UC_VerNotas["Ver notas enfermería"]
+    UC_Demo["Ver demo 3D"]
+    UC_Crear["Crear ficha"]
+    UC_Actualizar["Actualizar ficha"]
+    UC_Sync["Guardar en servidor"]
+    UC_EditarAp["Editar apartado"]
+    UC_IngresoSec["Ingreso por secciones"]
+    UC_Datos["Datos de ingreso"]
+    UC_Valor["Valoración y escalas"]
+    UC_Exam["Examen físico y mental"]
+    UC_Firmas["Firmas y aprobaciones"]
+    UC_Modelo3D["Modelo corporal 3D"]
+    UC_Agendar["Agendar cita"]
+    UC_Finalizar["Finalizar cita"]
+    UC_Signos["Registrar signos"]
+    UC_Nota["Registrar nota"]
+
+    C --> UC_Login
+    C --> UC_Logout
+    C --> UC_Inicio
+    C --> UC_Listar
+    C --> UC_Abrir
+    C --> UC_Explorar
+    C --> UC_ConsultarAp
+    C --> UC_Calendario
+    C --> UC_VerSignos
+    C --> UC_VerNotas
+    C --> UC_Demo
+    C --> UC_Crear
+    C --> UC_Actualizar
+    C --> UC_Sync
+    C --> UC_EditarAp
+    C --> UC_IngresoSec
+    C --> UC_Datos
+    C --> UC_Valor
+    C --> UC_Exam
+    C --> UC_Firmas
+    C --> UC_Modelo3D
+    C --> UC_Agendar
+    C --> UC_Finalizar
+    C --> UC_Signos
+    C --> UC_Nota
+
+    J --> UC_Login
+    J --> UC_Logout
+    J --> UC_Inicio
+    J --> UC_Listar
+    J --> UC_Abrir
+    J --> UC_Explorar
+    J --> UC_ConsultarAp
+    J --> UC_Calendario
+    J --> UC_VerSignos
+    J --> UC_VerNotas
+    J --> UC_Demo
+
+    style C fill:#1d4ed8,color:#fff
+    style J fill:#475569,color:#fff

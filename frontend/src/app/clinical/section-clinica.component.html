@@ -1,0 +1,159 @@
+<div [formGroup]="form">
+  <section class="section-card" formGroupName="clinica">
+    <h2>Valoración clínica</h2>
+    <label class="field-full"
+      >Patología diagnosticada<textarea formControlName="patologia"></textarea
+    ></label>
+    <h3>Alergias</h3>
+    <div class="field-grid">
+      <label>Medicamentos<textarea formControlName="alergiasMed"></textarea></label>
+      <label>Alimentos<textarea formControlName="alergiasAlim"></textarea></label>
+      <label>Otros<textarea formControlName="alergiasOtros"></textarea></label>
+    </div>
+    <h3>Medicamentos actuales</h3>
+    @if (medicamentos.length === 0) {
+      <div class="empty-block">
+        <p>Agregue cada medicamento con dosis y horario.</p>
+        <button type="button" class="btn" (click)="formApi.addMedicamento()">
+          + Agregar medicamento
+        </button>
+      </div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dosis</th>
+            <th>Horarios</th>
+            <th>Soporte fórmula</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody formArrayName="medicamentos">
+          @for (m of medicamentos.controls; track $index) {
+            <tr [formGroupName]="$index">
+              <td><input formControlName="nombre" /></td>
+              <td><input formControlName="dosis" /></td>
+              <td><input formControlName="horarios" /></td>
+              <td>
+                <app-pdf-attach
+                  formControlName="soporteFormulaPdf"
+                  [fileName]="$any(m).get('soporteFormulaNombre')?.value"
+                  (fileNameChange)="$any(m).patchValue({ soporteFormulaNombre: $event })"
+                  hint="Anexar PDF"
+                />
+              </td>
+              <td>
+                <button type="button" class="link-remove" (click)="formApi.removeMedicamento($index)">
+                  Quitar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
+        + Agregar medicamento
+      </button>
+    }
+  </section>
+
+  <div formGroupName="autopercepcion" class="form-section-group">
+  <section class="section-card" id="autopercepcion">
+    <h2>Autopercepción de la salud</h2>
+    <div class="field-grid">
+      <label class="field-full"
+        >Considera que su estado de salud es:
+        <select formControlName="estadoSalud">
+          <option value="">Seleccione…</option>
+          @for (o of saludOpts; track o) {
+            <option [value]="o">{{ o }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="section-card" id="anamnesis">
+    <h2>Anamnesis</h2>
+    <div class="field-grid">
+      <label>Aspecto a primera vista<textarea formControlName="anamnesisAspecto"></textarea></label>
+      <label>Emocional<textarea formControlName="anamnesisEmocional"></textarea></label>
+      <label>Físico<textarea formControlName="anamnesisFisico"></textarea></label>
+    </div>
+  </section>
+
+  <section class="section-card" id="condicion-general">
+    <h2>Condición general</h2>
+    <div class="field-grid">
+      <label>Higiénico<input formControlName="higienico" /></label>
+      <label>Nutricional<input formControlName="nutricional" /></label>
+      <label>¿Ayuda para movilizarse?<input formControlName="ayudaMovilizarse" /></label>
+      <label>¿Necesita inmovilización?<input formControlName="inmovilizacion" /></label>
+      <label>¿Autoriza inmovilización?<input formControlName="autorizaInmovilizacion" /></label>
+      <label>¿Camina solo?<input formControlName="caminaSolo" /></label>
+      <label>¿Camina con bastón?<input formControlName="caminaBaston" /></label>
+      <label>¿Silla de ruedas?<input formControlName="sillaRuedas" /></label>
+      <label>MSS<input formControlName="mss" /></label>
+      <label>MII<input formControlName="mii" /></label>
+    </div>
+  </section>
+  </div>
+
+  <section class="section-card">
+    <h2>Prácticas de riesgo y especialistas</h2>
+    <h3>Prácticas con riesgo a la salud</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Detalle</th>
+          <th>Frecuencia</th>
+        </tr>
+      </thead>
+      <tbody formArrayName="riesgoSalud">
+        @for (r of riesgoSalud.controls; track $index) {
+          <tr [formGroupName]="$index">
+            <td><input formControlName="detalle" readonly /></td>
+            <td><input formControlName="frecuencia" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <h3>Remisión de especialistas</h3>
+    @if (especialistas.length === 0) {
+      <div class="empty-block">
+        <p>Agregue especialistas si el adulto mayor recibe tratamiento externo.</p>
+        <button type="button" class="btn" (click)="formApi.addEspecialista()">
+          + Agregar especialista
+        </button>
+      </div>
+    } @else {
+      <div formArrayName="especialistas">
+        @for (e of especialistas.controls; track $index) {
+          <div class="item-card" [formGroupName]="$index">
+            <div class="item-card-head">
+              <span>Especialista {{ $index + 1 }}</span>
+              <button
+                type="button"
+                class="link-remove"
+                (click)="formApi.removeEspecialista($index)"
+              >
+                Quitar
+              </button>
+            </div>
+            <div class="field-grid">
+              <label>Especialidad<input formControlName="especialidad" /></label>
+              <label>Frecuencia<input formControlName="frecuencia" /></label>
+              <label class="field-full"
+                >Tratamiento<input formControlName="tratamiento"
+              /></label>
+            </div>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-secondary" (click)="formApi.addEspecialista()">
+        + Agregar especialista
+      </button>
+    }
+  </section>
+</div>

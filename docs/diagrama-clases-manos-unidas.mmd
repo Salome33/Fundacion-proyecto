@@ -1,0 +1,328 @@
+classDiagram
+    direction TB
+
+    class FichaClinica {
+        <<IntakeRecord>>
+        +id: string
+        +createdAt: string
+        +updatedAt: string
+        +nombre: string
+        +identificacion: string
+        +data: Record
+    }
+
+    class CitaMedica {
+        <<MedicalAppointment>>
+        +id: string
+        +patientKey: string
+        +tipoCita: string
+        +fecha: string
+        +hora: string
+        +nombreMedico: string
+        +finalizada: boolean
+        +finalizadaAt: string
+    }
+
+    class SignoVitalDiario {
+        <<DailyVitalsEntry>>
+        +id: string
+        +patientKey: string
+        +fecha: string
+        +turno: string
+        +ta: string
+        +fc: string
+        +fr: string
+        +spo2: string
+    }
+
+    class NotaEnfermeria {
+        <<NursingNote>>
+        +id: string
+        +patientKey: string
+        +fecha: string
+        +hora: string
+        +detalle: string
+    }
+
+    class SesionAuth {
+        <<AuthSession>>
+        +username: string
+        +role: string
+        +displayName: string
+    }
+
+    class UsuarioAuth {
+        <<AuthUser>>
+        +username: string
+        +password: string
+        +role: string
+        +displayName: string
+    }
+
+    class RegistroFichaServidor {
+        <<Java Record>>
+        +id: String
+        +savedAt: Instant
+        +data: Map
+    }
+
+    class FormularioClinico {
+        <<FormGroup>>
+        +personal: FormGroup
+        +economica: FormGroup
+        +familiar: FormGroup
+        +clinica: FormGroup
+        +escalas: FormGroup
+        +examenFisico: FormGroup
+        +hijos: FormArray
+        +medicamentos: FormArray
+        +profesionales: FormArray
+    }
+
+    class IntakeStoreService {
+        +records: Signal
+        +currentId: Signal
+        +fichasFlashMsg: Signal
+        +createNew(): string
+        +open(id): boolean
+        +syncFromForm(): void
+        +saveToServer(): void
+        +hydrateFromServer(): void
+        +commitCurrentIntake(): string
+    }
+
+    class ClinicalFormService {
+        +form: FormGroup
+        +loadFromRecord(data): void
+        +getSanitizedRawValue(): Record
+        +resetForNewIntake(): void
+        +pruneEmptyFormRows(): void
+        +addHijo(): void
+        +addMedicamento(): void
+        +addAcudiente(): void
+    }
+
+    class RegisteredPatientService {
+        +normalizeName(value): string
+        +normalizeDocument(value): string
+        +findRecord(nombre, id): FichaClinica
+        +resolvePatient(nombre, id): FichaClinica
+        +isRegistered(nombre, id): boolean
+    }
+
+    class MedicalAppointmentsService {
+        +appointments: Signal
+        +addAppointment(input): CitaMedica
+        +markFinalized(id): void
+        +activeSorted(): CitaMedica[]
+        +forPatient(nombre, id): CitaMedica[]
+    }
+
+    class DailyVitalsService {
+        +entries: Signal
+        +saveShift(input): SignoVitalDiario
+        +forPatientOnDate(nombre, id, fecha): SignoVitalDiario[]
+        +forPatient(nombre, id): SignoVitalDiario[]
+    }
+
+    class NursingNotesService {
+        +notes: Signal
+        +addNote(input): NotaEnfermeria
+        +forPatient(nombre, id): NotaEnfermeria[]
+        +removeNote(id): void
+    }
+
+    class AuthService {
+        +session: Signal
+        +isLoggedIn: boolean
+        +canEdit: boolean
+        +roleLabel: string
+        +login(username, password): boolean
+        +logout(): void
+    }
+
+    class ScratchSceneService {
+        +init(canvas): void
+        +loadModel(url): void
+        +exportPaintImage(): string
+    }
+
+    class AssessmentController {
+        +list(): List
+        +get(id): RegistroFichaServidor
+        +create(body): RegistroFichaServidor
+        +upsert(id, body): RegistroFichaServidor
+        +clearAll(): void
+    }
+
+    class ModelController {
+        +humanObj(): Resource
+    }
+
+    class HealthController {
+        +health(): Map
+    }
+
+    class AuthGuard {
+        <<guard>>
+        +canActivate(): boolean
+    }
+
+    class EditGuard {
+        <<guard>>
+        +canActivate(): boolean
+    }
+
+    class GuestGuard {
+        <<guard>>
+        +canActivate(): boolean
+    }
+
+    class LoginViewComponent {
+        +onLogin(): void
+    }
+
+    class HomeViewComponent {
+        +inicio(): void
+    }
+
+    class ClinicalMainNavComponent {
+        +navegar(ruta): void
+    }
+
+    class ClinicalAppShellComponent {
+        +init(): void
+    }
+
+    class ExploreSectionsViewComponent {
+        +explorar(): void
+    }
+
+    class RecordsListViewComponent {
+        +openFicha(id): void
+        +crearNueva(): void
+    }
+
+    class ClinicalIntakeComponent {
+        +onSave(): void
+        +onUpdate(): void
+    }
+
+    class SectionHubComponent {
+        +guardarSeccion(): void
+    }
+
+    class IntakeLayoutComponent {
+        +guardar(): void
+    }
+
+    class IntakeSectionPageComponent {
+        +cargarSeccion(): void
+    }
+
+    class AppointmentsViewComponent {
+        +vistaCalendario(): void
+    }
+
+    class MedicalAppointmentsPanelComponent {
+        +onAddCita(): void
+        +onFinalizar(id): void
+    }
+
+    class VitalsViewComponent {
+        +vistaSignos(): void
+    }
+
+    class DailyVitalsPanelComponent {
+        +onSaveTurno(): void
+    }
+
+    class NursingNotesViewComponent {
+        +vistaNotas(): void
+    }
+
+    class NursingNotesPanelComponent {
+        +onAddNota(): void
+    }
+
+    class ClinicalBodyScratchComponent {
+        +onPaint(): void
+        +guardarImagen(): void
+    }
+
+    class ScratchViewerComponent {
+        +verModelo3D(): void
+    }
+
+    FichaClinica "1" o-- "1" FormularioClinico : data
+    FichaClinica "1" --> "*" CitaMedica : patientKey
+    FichaClinica "1" --> "*" SignoVitalDiario : patientKey
+    FichaClinica "1" --> "*" NotaEnfermeria : patientKey
+    FichaClinica ..> RegistroFichaServidor : sync HTTP
+    SesionAuth ..> UsuarioAuth : login valida
+
+    IntakeStoreService *-- FichaClinica : records
+    IntakeStoreService --> ClinicalFormService : usa
+    ClinicalFormService *-- FormularioClinico : form
+    MedicalAppointmentsService *-- CitaMedica : appointments
+    DailyVitalsService *-- SignoVitalDiario : entries
+    NursingNotesService *-- NotaEnfermeria : notes
+    AuthService *-- SesionAuth : session
+    AssessmentController *-- RegistroFichaServidor : store
+
+    RegisteredPatientService --> IntakeStoreService : consulta
+    MedicalAppointmentsService --> RegisteredPatientService : valida paciente
+    DailyVitalsService --> RegisteredPatientService : valida paciente
+    NursingNotesService --> RegisteredPatientService : valida paciente
+
+    IntakeStoreService ..> AssessmentController : HTTP PUT POST GET
+    ClinicalBodyScratchComponent ..> ModelController : HTTP GET modelo 3D
+    ScratchViewerComponent ..> HealthController : HTTP GET health
+    ScratchViewerComponent ..> ModelController : HTTP GET modelo 3D
+
+    AuthGuard ..> AuthService : isLoggedIn
+    EditGuard ..> AuthService : canEdit coordinador
+    GuestGuard ..> AuthService : no logueado
+
+    LoginViewComponent ..> AuthService
+    HomeViewComponent ..> AuthService
+    ClinicalMainNavComponent ..> AuthService
+
+    ExploreSectionsViewComponent ..> SectionHubComponent : navega a seccion
+    ClinicalAppShellComponent ..> ExploreSectionsViewComponent : ruta explorar
+
+    ClinicalAppShellComponent ..> IntakeStoreService : hydrateFromServer
+    RecordsListViewComponent ..> IntakeStoreService
+    RecordsListViewComponent ..> AuthService
+
+    ClinicalIntakeComponent ..> ClinicalFormService
+    ClinicalIntakeComponent ..> IntakeStoreService
+    ClinicalIntakeComponent ..> AuthService
+
+    SectionHubComponent ..> ClinicalFormService
+    SectionHubComponent ..> IntakeStoreService
+    SectionHubComponent ..> AuthService
+
+    IntakeLayoutComponent ..> IntakeStoreService
+    IntakeLayoutComponent ..> AuthService
+
+    IntakeSectionPageComponent ..> ClinicalFormService
+    IntakeSectionPageComponent ..> IntakeStoreService
+
+    AppointmentsViewComponent *-- MedicalAppointmentsPanelComponent
+    MedicalAppointmentsPanelComponent ..> MedicalAppointmentsService
+    MedicalAppointmentsPanelComponent ..> AuthService
+
+    VitalsViewComponent *-- DailyVitalsPanelComponent
+    DailyVitalsPanelComponent ..> DailyVitalsService
+    DailyVitalsPanelComponent ..> AuthService
+
+    NursingNotesViewComponent *-- NursingNotesPanelComponent
+    NursingNotesPanelComponent ..> NursingNotesService
+    NursingNotesPanelComponent ..> AuthService
+
+    ClinicalBodyScratchComponent ..> ScratchSceneService
+    ClinicalBodyScratchComponent ..> ClinicalFormService
+    ClinicalBodyScratchComponent ..> IntakeStoreService
+    ClinicalBodyScratchComponent ..> AuthService
+    ScratchViewerComponent ..> ScratchSceneService

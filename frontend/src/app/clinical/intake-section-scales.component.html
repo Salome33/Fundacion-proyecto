@@ -1,0 +1,125 @@
+<div [formGroup]="form">
+  <div formGroupName="escalas" class="section-card">
+    <label class="field-full"
+      >Observaciones<textarea formControlName="escalasObservaciones" rows="3"></textarea
+    ></label>
+    <app-scale-form [scale]="barthel" [group]="$any(escalasGroup.get('barthel'))" />
+    <app-scale-form [scale]="lawton" [group]="$any(escalasGroup.get('lawton'))" />
+
+    <div class="scale-block">
+      <h3>Tinetti — Equilibrio</h3>
+      <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
+      <div [formGroup]="tinettiBalanceGroup()">
+        <ul class="scale-question-list">
+          @for (item of tinettiBalance; track item.id) {
+            <li class="scale-question-item scale-question-item--tinetti">
+              <p class="scale-question-text">{{ item.label }}</p>
+              <div class="scale-question-options scale-question-options--stack">
+                @for (opt of item.options; track opt.label) {
+                  <label class="scale-question-option">
+                    <input
+                      type="radio"
+                      [name]="'tb_' + item.id"
+                      [checked]="tinettiBalanceGroup().get(item.id)?.value === opt.score"
+                      (change)="setTinetti('balance', item.id, opt.score)"
+                    />
+                    <span class="scale-option-label">{{ opt.label }}</span>
+                    <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
+                      opt.score
+                    }}</span>
+                  </label>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="scale-total"><strong>Total equilibrio: {{ tinettiTotal('balance') }} / 15</strong></p>
+      </div>
+    </div>
+
+    <div class="scale-block">
+      <h3>Tinetti — Marcha</h3>
+      <p class="scale-sub">{{ tinettiGaitIntro }}</p>
+      <div [formGroup]="tinettiGaitGroup()">
+        <ul class="scale-question-list">
+          @for (item of tinettiGait; track item.id) {
+            <li class="scale-question-item scale-question-item--tinetti">
+              <p class="scale-question-text">{{ item.label }}</p>
+              <div class="scale-question-options scale-question-options--stack">
+                @for (opt of item.options; track opt.label) {
+                  <label class="scale-question-option">
+                    <input
+                      type="radio"
+                      [name]="'tg_' + item.id"
+                      [checked]="tinettiGaitGroup().get(item.id)?.value === opt.score"
+                      (change)="setTinetti('gait', item.id, opt.score)"
+                    />
+                    <span class="scale-option-label">{{ opt.label }}</span>
+                    <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
+                      opt.score
+                    }}</span>
+                  </label>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="scale-total">
+          <strong
+            >Marcha: {{ tinettiTotal('gait') }} / 12 · Total:
+            {{ tinettiTotal('balance') + tinettiTotal('gait') }} / 27</strong
+          >
+        </p>
+      </div>
+    </div>
+
+    <div class="scale-block">
+      <h3>Pfeiffer (SPMSQ)</h3>
+      <p class="scale-sub">{{ pfeifferIntro }}</p>
+      <div [formGroup]="pfeifferGroup()">
+        <ul class="scale-question-list">
+          @for (q of pfeifferQ; track q.id) {
+            <li class="scale-question-item scale-question-item--pfeiffer">
+              <label class="scale-question-label scale-question-label--pfeiffer">
+                <input type="checkbox" [formControlName]="q.id" />
+                <span class="scale-question-text">
+                  {{ q.label }}
+                  @if (q.hint) {
+                    <em class="scale-question-hint">({{ q.hint }})</em>
+                  }
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+        <p class="scale-total">
+          Errores: {{ pfeifferErrors() }} — {{ interpretPfeiffer(pfeifferErrors()) }}
+        </p>
+      </div>
+    </div>
+
+    <div class="scale-block">
+      <h3>GDS Yesavage</h3>
+      <p class="scale-sub">{{ gdsIntro }}</p>
+      <div [formGroup]="gdsGroup()">
+        <ul class="scale-question-list">
+          @for (q of gdsQ; track q.id) {
+            <li class="scale-question-item scale-question-item--gds">
+              <p class="scale-question-text">{{ q.label }}</p>
+              <p class="scale-question-detail">{{ q.detail }}</p>
+              <div class="scale-question-options scale-question-options--stack">
+                <label class="scale-question-option"
+                  ><input type="radio" [formControlName]="q.id" value="si" /> Sí</label
+                >
+                <label class="scale-question-option"
+                  ><input type="radio" [formControlName]="q.id" value="no" /> No</label
+                >
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="scale-total">Total: {{ gdsTotal() }} — {{ interpretGds(gdsTotal()) }}</p>
+      </div>
+    </div>
+  </div>
+</div>

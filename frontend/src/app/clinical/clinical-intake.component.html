@@ -1,0 +1,959 @@
+<div class="intake-scroll-shell lun-shell">
+  <aside class="lun-sidebar lun-sidebar--scroll-index clinical-intake-index">
+    <div class="lun-brand">
+      <div class="lun-brand-logo">
+        <img src="assets/fundacion/logo-emblem.png" alt="Fundación Manos Unidas de Dios" />
+      </div>
+      <p class="lun-brand-title">Fundación Manos Unidas de Dios</p>
+      <p class="lun-brand-sub">Formulario de ingreso</p>
+    </div>
+
+    <nav class="lun-sidebar-nav clinical-intake-index-list" aria-label="Índice del formulario">
+      <p class="lun-nav-heading">Índice de secciones</p>
+      @for (s of indexItems; track s.path) {
+        <button
+          type="button"
+          class="lun-nav-item intake-index-link"
+          [attr.data-index-path]="s.path"
+          [class.lun-nav-item--active]="activeIndexPath() === s.path"
+          (click)="scrollToSection(s)"
+        >
+          <span class="lun-nav-icon lun-nav-icon--menu" aria-hidden="true"></span>
+          <span>{{ s.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="clinical-intake-index-bottom">
+      <div class="lun-sidebar-meta clinical-intake-index-meta clinical-sidebar-actions">
+        @if (storeApi.currentId()) {
+          <a routerLink="/fichas" class="btn btn-secondary btn-gold--block clinical-main-nav-new-btn">
+            ← Volver a fichas
+          </a>
+        } @else {
+          <a routerLink="/" class="btn btn-secondary btn-gold--block clinical-main-nav-new-btn">
+            ← Volver al inicio
+          </a>
+        }
+        <button
+          type="button"
+          class="btn btn-secondary btn-gold--block clinical-main-nav-new-btn"
+          (click)="logout()"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+
+      <footer class="lun-sidebar-foot clinical-main-nav-foot-wrap clinical-foundation-contact">
+        <a
+          class="clinical-foundation-contact-site"
+          [href]="contact.websiteUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ contact.website }}
+        </a>
+        <a class="clinical-foundation-contact-line" [href]="'mailto:' + contact.email">
+          {{ contact.email }}
+        </a>
+        <p class="clinical-foundation-contact-line">{{ contact.phones }}</p>
+        <p class="clinical-foundation-contact-line">{{ contact.location }}</p>
+      </footer>
+    </div>
+  </aside>
+
+  <div class="clinical-page intake-scroll-main" [formGroup]="form" [class.intake-readonly]="!auth.canEdit()">
+  <div class="intake-form-window">
+  <header class="clinical-header clinical-header--intake">
+    <img src="assets/fundacion/logo-emblem.png" alt="Fundación Manos Unidas de Dios" />
+    <div class="clinical-header-text">
+      <h1>Formato de ingreso y valoración clínica — Adulto mayor</h1>
+      <p>Fundación Manos Unidas de Dios · Centro de Protección Social</p>
+    </div>
+  </header>
+
+  @if (saveMsg()) {
+    <p class="intake-form-toast" role="status">{{ saveMsg() }}</p>
+  }
+
+  <div class="clinical-shell clinical-shell--single">
+    <main class="clinical-main">
+      <section class="section-card" id="contrato">
+        <h2>Contrato Nº</h2>
+        <div class="field-grid">
+          <label class="field-full">
+            Número de contrato
+            <input formControlName="contratoNumero" />
+          </label>
+        </div>
+      </section>
+
+      <section class="section-card" id="personal" formGroupName="personal">
+        <h2>Información personal</h2>
+        <div class="personal-with-photo">
+          <div class="field-grid">
+            <label>Fecha de ingreso<input type="date" formControlName="fechaIngreso" /></label>
+            <label
+              >Fecha de actualización<input type="date" formControlName="fechaActualizacion"
+            /></label>
+            <label>Modalidad<input formControlName="modalidad" /></label>
+            <label class="field-full"
+              >Nombre y apellidos<input formControlName="nombreApellidos"
+            /></label>
+            <label>Identificación<input formControlName="identificacion" /></label>
+            <label class="field-full field-split-label">
+              Lugar y fecha de expedición
+              <div class="field-split">
+                <input formControlName="lugarExpedicion" />
+                <input type="date" formControlName="fechaExpedicion" aria-label="Fecha de expedición" />
+              </div>
+            </label>
+            <label class="field-full field-split-label">
+              Lugar y fecha de nacimiento
+              <div class="field-split">
+                <input formControlName="lugarNacimiento" />
+                <input type="date" formControlName="fechaNacimiento" aria-label="Fecha de nacimiento" />
+              </div>
+            </label>
+            <label>Edad<input formControlName="edad" /></label>
+            <label>Rh<input formControlName="rh" /></label>
+            <label
+              >Sexo
+              <select formControlName="sexo">
+                <option value="">—</option>
+                <option>Femenino</option>
+                <option>Masculino</option>
+              </select>
+            </label>
+            <label>Estado civil<input formControlName="estadoCivil" /></label>
+            <label>Nombre del cónyuge<input formControlName="nombreConyuge" /></label>
+            <label>Estudios cursados<input formControlName="estudios" /></label>
+            <label>EPS<input formControlName="eps" /></label>
+            <label>Régimen<input formControlName="regimen" /></label>
+            <label>Lugar de atención<input formControlName="lugarAtencion" /></label>
+            <label>Servicios funerarios<input formControlName="serviciosFunerarios" /></label>
+            <label>Profesión<input formControlName="profesion" /></label>
+            <label>Confesión religiosa<input formControlName="confesionReligiosa" /></label>
+          </div>
+          <div class="photo-attach-col">
+            <app-photo-attach
+              formControlName="foto"
+              header="Anexar foto"
+              sizeHint="3,5 × 4,5 cm"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="economica" formGroupName="economica">
+        <h2>Información económica</h2>
+        <div class="field-grid">
+          <label class="field-full"
+            >Los ingresos económicos son de<input formControlName="ingresosDe"
+          /></label>
+          <label class="field-full"
+            >Recibe apoyo de entes gubernamentales<input formControlName="apoyoGubernamental"
+          /></label>
+          <label class="field-full"
+            >El lugar donde residía es de<input formControlName="viviendaTipo"
+          /></label>
+          <label class="field-full">Dirección<input formControlName="direccion" /></label>
+        </div>
+      </section>
+
+      <section class="section-card" id="familiar" formGroupName="familiar">
+        <h2>Información familiar y social</h2>
+        <div class="field-grid">
+          <label class="field-full">Nombre de la madre<input formControlName="nombreMadre" /></label>
+          <label class="field-full">Nombre del padre<input formControlName="nombrePadre" /></label>
+          <label class="field-full"
+            >¿Con quién vive actualmente?<input formControlName="conQuienVive"
+          /></label>
+          <label class="field-full"
+            >Principal cuidador<input formControlName="cuidadorPrincipal"
+          /></label>
+          <label class="field-full"
+            >Familiares cercanos<input formControlName="familiaresCercanos"
+          /></label>
+          <label>Frecuencia de visitas<input formControlName="frecuenciaVisitas" /></label>
+          <label class="field-full"
+            >Relación con la familia<textarea formControlName="relacionFamilia"></textarea
+          ></label>
+          <label class="field-full"
+            >Persona para decisiones en emergencia<input formControlName="decisionEmergencia"
+          /></label>
+          <label class="field-full"
+            >Actividades sociales / comunitarias / religiosas<textarea
+              formControlName="actividadesSociales"
+            ></textarea
+          ></label>
+          <label class="field-full"
+            >Antecedentes abandono / maltrato<textarea
+              formControlName="antecedentesMaltrato"
+            ></textarea
+          ></label>
+          <label class="field-full"
+            >Expectativas de la familia<textarea formControlName="expectativas"></textarea
+          ></label>
+          <label class="field-full"
+            >Razón principal del ingreso<textarea formControlName="razonIngreso"></textarea
+          ></label>
+        </div>
+      </section>
+
+      <section class="section-card" id="hijos">
+        <h2>Información de los hijos</h2>
+        <div formArrayName="hijos" class="dynamic-rows">
+          @for (row of hijos.controls; track $index) {
+            <div class="entry-card" [formGroupName]="$index">
+              <div class="field-grid field-grid--row-3">
+                <label>Nombre y apellidos<input formControlName="nombre" /></label>
+                <label>Contacto<input formControlName="contacto" /></label>
+                <label>Correo electrónico<input formControlName="email" type="email" /></label>
+              </div>
+              @if ($index > 0) {
+              <button type="button" class="link-remove" (click)="formApi.removeHijo($index)">
+                Quitar hijo
+              </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="section-action-row">
+          <button type="button" class="btn btn-secondary" (click)="formApi.addHijo()">
+            + Agregar hijo
+          </button>
+        </div>
+      </section>
+
+      <section class="section-card" id="referencias">
+        <h2>Referencias y acudientes</h2>
+        <div formArrayName="referencias" class="dynamic-rows">
+          @for (ref of referencias.controls; track $index) {
+            <div class="entry-card" [formGroupName]="$index">
+              <div class="field-grid">
+                <label class="field-full"
+                  >Nombre y apellido<input formControlName="nombre"
+                /></label>
+                <label>Contacto<input formControlName="contacto" /></label>
+                <label>Dirección<input formControlName="direccion" /></label>
+                <label>Relación<input formControlName="relacion" /></label>
+              </div>
+              @if ($index > 0) {
+                <button type="button" class="link-remove" (click)="formApi.removeReferencia($index)">
+                  Quitar referencia
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="section-action-row">
+          <button type="button" class="btn btn-secondary" (click)="formApi.addReferencia()">
+            + Agregar referencia
+          </button>
+        </div>
+
+        <h3 class="subsection-spaced" id="acudiente">Información del acudiente</h3>
+        <div formArrayName="acudientes">
+          @for (ac of acudientes.controls; track $index) {
+            <div class="acudiente-with-photo entry-card entry-card--relative" [formGroupName]="$index">
+              <div class="field-grid">
+                <label>Nombre<input formControlName="nombre" /></label>
+                <label>Identificación<input formControlName="identificacion" /></label>
+                <label>Contacto<input formControlName="contacto" /></label>
+                <label>Correo<input formControlName="email" /></label>
+                <label class="field-full">Dirección<input formControlName="direccion" /></label>
+                <label>Ingresos dependen de<input formControlName="ingresosDependen" /></label>
+                <label>Parentesco<input formControlName="parentesco" /></label>
+              </div>
+              <div class="photo-attach-col">
+                <app-photo-attach
+                  formControlName="foto"
+                  header="Anexar foto"
+                  sizeHint="3,5 × 4,5 cm"
+                />
+              </div>
+              @if ($index > 0) {
+                <button
+                  type="button"
+                  class="link-remove entry-remove-br"
+                  (click)="formApi.removeAcudiente($index)"
+                >
+                  Quitar acudiente
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="section-action-row">
+          <button type="button" class="btn btn-secondary" (click)="formApi.addAcudiente()">
+            + Agregar acudiente
+          </button>
+        </div>
+
+        <h3 class="subsection-spaced">Observaciones</h3>
+        <label class="field-full"
+          ><textarea formControlName="observacionesGenerales" rows="2"></textarea
+        ></label>
+      </section>
+
+      <section class="section-card" id="clinica" formGroupName="clinica">
+        <h2 id="valoracion-clinica">Valoración clínica</h2>
+        <label class="field-full field-title-block" id="patologias">
+          <span class="field-title">Patología diagnosticada</span>
+          <textarea formControlName="patologia" rows="2"></textarea>
+        </label>
+        <h3 id="alergias">Alergias</h3>
+        <div class="field-grid">
+          <label>Medicamentos<textarea formControlName="alergiasMed"></textarea></label>
+          <label>Alimentos<textarea formControlName="alergiasAlim"></textarea></label>
+          <label>Otros<textarea formControlName="alergiasOtros"></textarea></label>
+        </div>
+        <h3 id="medicamentos">Medicamentos</h3>
+        <div formArrayName="medicamentos" class="dynamic-rows">
+          @for (m of medicamentos.controls; track $index) {
+            <div class="entry-card" [formGroupName]="$index">
+              <div class="field-grid field-grid--row-3">
+                <label>Nombre<input formControlName="nombre" /></label>
+                <label>Dosis<input formControlName="dosis" /></label>
+                <label>Horarios<input formControlName="horarios" /></label>
+              </div>
+              <div class="pdf-attach-col">
+                <app-pdf-attach
+                  formControlName="soporteFormulaPdf"
+                  [fileName]="$any(m).get('soporteFormulaNombre')?.value"
+                  (fileNameChange)="$any(m).patchValue({ soporteFormulaNombre: $event })"
+                />
+              </div>
+              @if ($index > 0) {
+                <button type="button" class="link-remove" (click)="formApi.removeMedicamento($index)">
+                  Quitar medicamento
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="section-action-row">
+          <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
+            + Agregar medicamento
+          </button>
+        </div>
+      </section>
+
+      <div formGroupName="autopercepcion" class="intake-form-section-group">
+      <section class="section-card" id="autopercepcion">
+        <h2>Autopercepción de la salud</h2>
+        <div class="field-grid">
+          <label class="field-full"
+            >Considera que su estado de salud es:
+            <select formControlName="estadoSalud">
+              <option value="">Seleccione…</option>
+              @for (o of saludOpts; track o) {
+                <option [value]="o">{{ o }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="section-card" id="anamnesis">
+        <h2>Anamnesis</h2>
+        <div class="field-grid">
+          <label>Aspecto a primera vista<textarea formControlName="anamnesisAspecto"></textarea></label>
+          <label>Emocional<textarea formControlName="anamnesisEmocional"></textarea></label>
+          <label>Físico<textarea formControlName="anamnesisFisico"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section-card" id="condicion-general">
+        <h2>Condición general</h2>
+        <div class="field-grid">
+          <label>Higiénico<input formControlName="higienico" /></label>
+          <label>Nutricional<input formControlName="nutricional" /></label>
+          <label>¿Necesita ayuda para movilizarse?<input formControlName="ayudaMovilizarse" /></label>
+          <label>¿Necesita inmovilización?<input formControlName="inmovilizacion" /></label>
+          <label>¿Autoriza inmovilización?<input formControlName="autorizaInmovilizacion" /></label>
+          <label>¿Camina solo?<input formControlName="caminaSolo" /></label>
+          <label>¿Camina con bastón?<input formControlName="caminaBaston" /></label>
+          <label>¿Movilización en silla de ruedas?<input formControlName="sillaRuedas" /></label>
+          <label>MSS<input formControlName="mss" /></label>
+          <label>MII<input formControlName="mii" /></label>
+        </div>
+      </section>
+      </div>
+
+      <section class="section-card" id="practicas-riesgo">
+        <h2>Prácticas con riesgo a la salud</h2>
+        <div formGroupName="riesgoSalud" class="riesgo-blocks">
+          <div formGroupName="tabaco" class="riesgo-item entry-card">
+            <p class="riesgo-label">Consumo de tabaco</p>
+            <div class="riesgo-sino">
+              <label class="scale-question-option"
+                ><input type="radio" formControlName="consume" value="si" /> Sí</label
+              >
+              <label class="scale-question-option"
+                ><input type="radio" formControlName="consume" value="no" /> No</label
+              >
+            </div>
+            @if (riesgoConsume('tabaco')) {
+              <label class="field-full riesgo-freq"
+                >¿Con qué frecuencia?<input formControlName="frecuencia"
+              /></label>
+            }
+          </div>
+          <div formGroupName="alcohol" class="riesgo-item entry-card">
+            <p class="riesgo-label">Consumo de alcohol</p>
+            <div class="riesgo-sino">
+              <label class="scale-question-option"
+                ><input type="radio" formControlName="consume" value="si" /> Sí</label
+              >
+              <label class="scale-question-option"
+                ><input type="radio" formControlName="consume" value="no" /> No</label
+              >
+            </div>
+            @if (riesgoConsume('alcohol')) {
+              <label class="field-full riesgo-freq"
+                >¿Con qué frecuencia?<input formControlName="frecuencia"
+              /></label>
+            }
+          </div>
+          <div formGroupName="otraSustancia" class="riesgo-item entry-card">
+            <p class="riesgo-label">Otra sustancia (opcional)</p>
+            <div class="field-grid field-grid--row-2">
+              <label>Nombre de la sustancia<input formControlName="nombre" /></label>
+              @if (otraSustanciaActiva()) {
+                <label>¿Con qué frecuencia?<input formControlName="frecuencia" /></label>
+              }
+            </div>
+          </div>
+          <div formArrayName="otrasSustancias" class="dynamic-rows riesgo-sustancias-list">
+            @for (s of otrasSustancias.controls; track $index) {
+              <div class="entry-card" [formGroupName]="$index">
+                <div class="field-grid field-grid--row-2">
+                  <label>Nombre de la sustancia<input formControlName="nombre" /></label>
+                  <label>¿Con qué frecuencia?<input formControlName="frecuencia" /></label>
+                </div>
+                <button type="button" class="link-remove" (click)="formApi.removeOtraSustancia($index)">
+                  Quitar sustancia
+                </button>
+              </div>
+            }
+          </div>
+          <div class="section-action-row section-action-row--tight">
+            <button type="button" class="btn btn-secondary" (click)="formApi.addOtraSustancia()">
+              + Agregar otra sustancia
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="remision-especialistas">
+        <h2>Remisión de especialistas</h2>
+        <div formArrayName="especialistas" class="dynamic-rows">
+          @for (e of especialistas.controls; track $index) {
+            <div class="entry-card" [formGroupName]="$index">
+              <div class="field-grid field-grid--row-3">
+                <label>Especialidad<input formControlName="especialidad" /></label>
+                <label>Frecuencia<input formControlName="frecuencia" /></label>
+                <label>Tratamiento<input formControlName="tratamiento" /></label>
+              </div>
+              @if ($index > 0) {
+                <button type="button" class="link-remove" (click)="formApi.removeEspecialista($index)">
+                  Quitar especialista
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <div class="section-action-row">
+          <button type="button" class="btn btn-secondary" (click)="formApi.addEspecialista()">
+            + Agregar especialista
+          </button>
+        </div>
+      </section>
+
+      <section class="section-card" id="examen" formGroupName="examenFisico">
+        <h2>Examen físico</h2>
+        <div class="exam-regions">
+          @for (region of examRegions; track region.id) {
+            <div class="exam-region-block exam-region-block--boxed" [formGroupName]="region.id">
+              <h3 class="exam-region-title">{{ region.label }}</h3>
+              <div class="field-grid exam-subfields-grid">
+                @for (field of region.fields; track field.id) {
+                  <div class="exam-subfield-item">
+                    <h4 class="exam-subfield-title">{{ field.label }}</h4>
+                    <div class="clinical-field-box clinical-field-box--solo">
+                      <textarea
+                        class="clinical-field-control"
+                        [formControlName]="field.id"
+                        rows="2"
+                      ></textarea>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        <div class="exam-region-block exam-region-block--boxed incontinencia-block" formGroupName="incontinencia">
+          <h3 class="exam-region-title">Incontinencia urinaria</h3>
+          <div class="incontinencia-sections">
+            <div class="entry-card incontinencia-panel">
+              <label class="incontinencia-field-label">
+                <span class="field-title">¿Presenta incontinencia urinaria?</span>
+                <select formControlName="presenta">
+                  <option value="">—</option>
+                  <option>Sí</option>
+                  <option>No</option>
+                </select>
+              </label>
+            </div>
+
+            @if (incontinenciaGroup.get('presenta')?.value === 'Sí') {
+              <div class="entry-card incontinencia-panel">
+                <p class="field-title incontinencia-momento-label">Indique si es de día, de noche o ambos</p>
+                <div class="incontinencia-momento riesgo-sino">
+                  <label class="scale-question-option">
+                    <input type="radio" formControlName="momento" value="dia" /> Día
+                  </label>
+                  <label class="scale-question-option">
+                    <input type="radio" formControlName="momento" value="noche" /> Noche
+                  </label>
+                  <label class="scale-question-option">
+                    <input type="radio" formControlName="momento" value="ambos" /> Ambos
+                  </label>
+                </div>
+              </div>
+            }
+
+            <div class="field-grid exam-subfields-grid">
+              @for (item of incontinenciaChecks; track item.id) {
+                <div class="exam-subfield-item">
+                  <h4 class="exam-subfield-title">{{ item.label }}</h4>
+                  <div class="clinical-field-box clinical-field-box--solo">
+                    <textarea
+                      class="clinical-field-control"
+                      [formControlName]="item.id"
+                      rows="2"
+                    ></textarea>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="sistemas" formGroupName="revisionSistemas">
+        <h2>Valor frecuencia respiratoria en un minuto</h2>
+        <div class="exam-regions valor-fr-list">
+          @for (item of valorFrItems; track item.id) {
+            <div class="valor-fr-item">
+              <h3 class="exam-region-title">{{ item.label }}</h3>
+              @if (item.hint) {
+                <p class="valor-fr-hint">{{ item.hint }}</p>
+              }
+              <div class="clinical-field-box clinical-field-box--solo">
+                <textarea class="clinical-field-control" [formControlName]="item.id" rows="2"></textarea>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="section-card" id="mental">
+        <h2>Examen mental</h2>
+        <div class="examen-mental-list" formGroupName="examenMental">
+          @for (field of examenMentalFields; track field.id) {
+            <div class="examen-mental-item">
+              <h3 class="exam-region-title">{{ field.label }}</h3>
+              @if (field.hint) {
+                <p class="valor-fr-hint">{{ field.hint }}</p>
+              }
+              <div class="clinical-field-box clinical-field-box--solo">
+                <textarea class="clinical-field-control" [formControlName]="field.id" rows="2"></textarea>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="section-card" id="antecedentes">
+        <h2>Antecedentes</h2>
+        <div class="field-grid antecedentes-grid" formGroupName="antecedentes">
+          <div class="antecedentes-item">
+            <h3 class="exam-region-title">Quirúrgicos</h3>
+            <div class="clinical-field-box clinical-field-box--solo">
+              <textarea class="clinical-field-control" formControlName="quirurgicos" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="antecedentes-item">
+            <h3 class="exam-region-title">Patológicos</h3>
+            <div class="clinical-field-box clinical-field-box--solo">
+              <textarea class="clinical-field-control" formControlName="patologicos" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="antecedentes-item">
+            <h3 class="exam-region-title">Farmacológicos</h3>
+            <div class="clinical-field-box clinical-field-box--solo">
+              <textarea class="clinical-field-control" formControlName="farmacologicos" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="antecedentes-item">
+            <h3 class="exam-region-title">Alérgicos</h3>
+            <div class="clinical-field-box clinical-field-box--solo">
+              <textarea class="clinical-field-control" formControlName="alergicos" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="antecedentes-item">
+            <h3 class="exam-region-title">Cáncer</h3>
+            <div class="clinical-field-box clinical-field-box--solo">
+              <textarea class="clinical-field-control" formControlName="cancer" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="antecedentes-caidas">
+        <h2>Antecedentes de caídas</h2>
+        <div class="field-grid antecedentes-caidas-grid" formGroupName="antecedentesCaidas">
+          <label class="field-full antecedentes-caidas-select">
+            <span class="field-title">¿Caídas desde su propia altura?</span>
+            <select formControlName="caidasPropiaAltura">
+              <option value="">—</option>
+              <option>Sí</option>
+              <option>No</option>
+            </select>
+          </label>
+          <div class="field-full antecedentes-item">
+            <h3 class="exam-region-title">Riesgo de caída</h3>
+            <div class="clinical-field-box clinical-field-box--solo">
+              <textarea class="clinical-field-control" formControlName="riesgoCaida" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="vitales">
+        <h2>Signos vitales</h2>
+        <div class="field-grid" formGroupName="signosVitales">
+          <label>TA<input formControlName="ta" /></label>
+          <label>FC<input formControlName="fc" /></label>
+          <label>FR<input formControlName="fr" /></label>
+          <label>SPO2<input formControlName="spo2" /></label>
+          <label>Peso (kg)<input formControlName="peso" type="number" /></label>
+          <label>Talla (cm)<input formControlName="talla" type="number" /></label>
+          <label>IMC<input formControlName="imc" type="number" step="0.1" /></label>
+        </div>
+      </section>
+
+      <section class="section-card body-graphic-section" id="cuerpo-grafico">
+        <header class="body-graphic-section-head">
+          <h2>Descripción gráfica del estado del cuerpo</h2>
+          <p class="body-graphic-hint">
+            @if (auth.canEdit()) {
+              Marque heridas o condiciones sobre el modelo. Las marcas se guardan con la ficha del
+              adulto mayor.
+            } @else {
+              Visualice las áreas marcadas del adulto mayor sobre el modelo y las observaciones
+              registradas.
+            }
+          </p>
+        </header>
+        <app-clinical-body-scratch
+          [intakeKey]="storeApi.currentId() ?? draftIntakeKey()"
+        />
+        <label class="clinical-field-box clinical-field-box--observaciones field-observaciones field-full">
+          <span class="clinical-field-box-label">Observaciones</span>
+          <textarea
+            class="observaciones-wide clinical-field-control"
+            formControlName="descripcionCuerpoObservaciones"
+            rows="7"
+          ></textarea>
+        </label>
+      </section>
+
+      <section class="section-card" id="vgi">
+        <h2>Valoración gerontogeriátrica integral (VGI)</h2>
+        <div class="info-box vgi-box">{{ vgiTexto }}</div>
+      </section>
+
+      <section class="section-card" id="escala-barthel" formGroupName="escalas">
+        <h2>{{ barthel.title }}</h2>
+        <app-scale-form
+          [scale]="barthel"
+          [group]="$any(escalasGroup.get('barthel'))"
+          [hideHeader]="true"
+        />
+      </section>
+
+      <section class="section-card" id="escala-lawton" formGroupName="escalas">
+        <h2>{{ lawton.title }}</h2>
+        @if (lawton.subtitle) {
+          <p class="scale-sub">{{ lawton.subtitle }}</p>
+        }
+        <app-scale-form
+          [scale]="lawton"
+          [group]="$any(escalasGroup.get('lawton'))"
+          [hideHeader]="true"
+        />
+      </section>
+
+      <section class="section-card" id="escala-tinetti-equilibrio" formGroupName="escalas">
+        <h2>Escala de Tinetti — Parte 1: Equilibrio (máx. 15)</h2>
+        <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
+        <div [formGroup]="tinettiBalanceGroup()">
+          <ul class="scale-question-list">
+            @for (item of tinettiBalance; track item.id) {
+              <li class="scale-question-item scale-question-item--tinetti">
+                <p class="scale-question-text">{{ item.label }}</p>
+                <div class="scale-question-options scale-question-options--stack">
+                  @for (opt of item.options; track opt.label) {
+                    <label class="scale-question-option">
+                      <input type="radio" [formControlName]="item.id" [value]="opt.score" />
+                      <span class="scale-option-label">{{ opt.label }}</span>
+                      <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
+                        opt.score
+                      }}</span>
+                    </label>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+          <p class="scale-total">
+            <strong
+              >Total equilibrio: {{ tinettiTotal('balance') }} / 15 · Porcentaje:
+              {{ tinettiPercent('balance') }}%</strong
+            >
+          </p>
+        </div>
+      </section>
+
+      <section class="section-card" id="escala-tinetti-marcha" formGroupName="escalas">
+        <h2>Escala de Tinetti — Parte 2: Marcha (máx. 12)</h2>
+        <p class="scale-sub">{{ tinettiGaitIntro }}</p>
+        <div [formGroup]="tinettiGaitGroup()">
+          <ul class="scale-question-list">
+            @for (item of tinettiGait; track item.id) {
+              <li class="scale-question-item scale-question-item--tinetti">
+                <p class="scale-question-text">{{ item.label }}</p>
+                <div class="scale-question-options scale-question-options--stack">
+                  @for (opt of item.options; track opt.label) {
+                    <label class="scale-question-option">
+                      <input type="radio" [formControlName]="item.id" [value]="opt.score" />
+                      <span class="scale-option-label">{{ opt.label }}</span>
+                      <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
+                        opt.score
+                      }}</span>
+                    </label>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+          <p class="scale-total">
+            <strong
+              >Total marcha: {{ tinettiTotal('gait') }} / 12 · Porcentaje:
+              {{ tinettiPercent('gait') }}%</strong
+            >
+          </p>
+          <p class="scale-total">
+            <strong
+              >Total general Tinetti: {{ tinettiGeneralTotal() }} / 27 · Porcentaje:
+              {{ tinettiGeneralPercent() }}%</strong
+            >
+            <span class="interp">{{ tinettiInterpret(tinettiGeneralTotal()) }}</span>
+          </p>
+        </div>
+      </section>
+
+      <section class="section-card" id="escala-pfeiffer" formGroupName="escalas">
+        <h2>Cuestionario de Pfeiffer (SPMSQ)</h2>
+        <p class="scale-sub">{{ pfeifferIntro }}</p>
+        <div [formGroup]="pfeifferGroup()">
+          <ul class="scale-question-list">
+            @for (q of pfeifferQ; track q.id) {
+              <li class="scale-question-item scale-question-item--pfeiffer">
+                <label class="scale-question-label scale-question-label--pfeiffer">
+                  <input type="checkbox" [formControlName]="q.id" />
+                  <span class="scale-question-text">
+                    {{ q.label }}
+                    @if (q.hint) {
+                      <em class="scale-question-hint">({{ q.hint }})</em>
+                    }
+                  </span>
+                </label>
+              </li>
+            }
+          </ul>
+          <p class="scale-total">
+            Errores: {{ pfeifferErrors() }} — {{ interpretPfeiffer(pfeifferErrors()) }}
+          </p>
+        </div>
+      </section>
+
+      <section class="section-card" id="escala-gds" formGroupName="escalas">
+        <h2>Escala de depresión geriátrica (GDS / Yesavage)</h2>
+        <p class="scale-sub">{{ gdsIntro }}</p>
+        <div [formGroup]="gdsGroup()">
+          <ul class="scale-question-list">
+            @for (q of gdsQ; track q.id) {
+              <li class="scale-question-item scale-question-item--gds">
+                <p class="scale-question-text">{{ q.label }}</p>
+                <p class="scale-question-detail">{{ q.detail }}</p>
+                <div class="scale-question-options scale-question-options--stack">
+                  <label class="scale-question-option"
+                    ><input type="radio" [formControlName]="q.id" value="si" /> Sí</label
+                  >
+                  <label class="scale-question-option"
+                    ><input type="radio" [formControlName]="q.id" value="no" /> No</label
+                  >
+                </div>
+              </li>
+            }
+          </ul>
+          <p class="scale-total">
+            Total: {{ gdsTotal() }} — {{ interpretGds(gdsTotal()) }}
+          </p>
+        </div>
+      </section>
+
+      <section class="section-card" id="concepto-institucional">
+        <h2>{{ conceptoInstitucionalTitulo }}</h2>
+        <div formGroupName="conceptoInstitucional">
+          <div class="field-grid">
+            <label>Fecha<input type="date" formControlName="fecha" /></label>
+            <label
+              >Concepto
+              <select formControlName="favorable">
+                <option value="">—</option>
+                <option value="si">Favorable para el ingreso</option>
+                <option value="no">No favorable para el ingreso</option>
+              </select>
+            </label>
+            <label class="field-full"
+              >Justificación<textarea formControlName="justificacion" rows="3"></textarea
+            ></label>
+            <div class="field-full firma-attach-field firma-attach-field--center">
+              <app-multi-photo-attach formControlName="firmas" variant="signature" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="aprobacion-independiente">
+        <h2>Aprobación de ingreso para persona independiente</h2>
+        <div formGroupName="aprobacionIndependiente">
+          <div class="field-grid">
+            <label>Fecha<input type="date" formControlName="fecha" /></label>
+            <label
+              >Concepto
+              <select formControlName="favorable">
+                <option value="">—</option>
+                <option value="si">Favorable</option>
+                <option value="no">No favorable</option>
+              </select>
+            </label>
+            <label class="field-full"
+              >Justificación<textarea formControlName="justificacion"></textarea
+            ></label>
+            <div class="field-full firma-attach-field firma-attach-field--center">
+              <app-multi-photo-attach formControlName="firmas" variant="signature" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="aprobacion-familia">
+        <h2>
+          Aprobación de ingreso para persona con familia y limitación para la toma de decisiones
+        </h2>
+        <div formGroupName="aprobacionFamilia">
+          <div class="field-grid">
+            <label>Fecha<input type="date" formControlName="fecha" /></label>
+            <label
+              >Concepto
+              <select formControlName="favorable">
+                <option value="">—</option>
+                <option value="si">Favorable</option>
+                <option value="no">No favorable</option>
+              </select>
+            </label>
+            <label class="field-full"
+              >Justificación<textarea formControlName="justificacion"></textarea
+            ></label>
+            <div class="field-full firma-attach-field firma-attach-field--center">
+              <app-multi-photo-attach formControlName="firmas" variant="signature" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="declaracion">
+        <h2>Declaración del contratante o acudiente</h2>
+        <div class="declaracion-texto">{{ declaracionTexto }}</div>
+        <div formGroupName="declaracion" class="field-grid">
+          <label>Nombre<input formControlName="nombre" /></label>
+          <label>Documento<input formControlName="documento" /></label>
+          <label>Fecha<input type="date" formControlName="fecha" /></label>
+          <div class="field-full firma-attach-field firma-attach-field--center">
+            <app-photo-attach formControlName="firma" variant="signature" hint="Firma del acudiente" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card" id="profesionales">
+        <h2>{{ profesionalesTitulo }}</h2>
+        <div formArrayName="profesionales" class="dynamic-rows">
+          @for (prof of profesionales.controls; track $index) {
+            <div class="entry-card" [formGroupName]="$index">
+              <div class="field-grid">
+                <label class="field-full"
+                  >Nombre del profesional<input formControlName="nombre"
+                /></label>
+                <label>Cargo<input formControlName="cargo" /></label>
+                <label>Documento<input formControlName="documento" /></label>
+                <label>Fecha<input type="date" formControlName="fecha" /></label>
+                <div class="field-full firma-attach-field firma-attach-field--center">
+                  <app-photo-attach
+                    formControlName="firma"
+                    variant="signature"
+                    hint="Firma del profesional"
+                  />
+                </div>
+              </div>
+              @if ($index > 0) {
+                <button type="button" class="link-remove" (click)="formApi.removeProfesional($index)">
+                  Quitar profesional
+                </button>
+              }
+            </div>
+          }
+        </div>
+        @if (auth.canEdit()) {
+          <div class="section-action-row">
+            <button type="button" class="btn btn-secondary" (click)="formApi.addProfesional()">
+              + Agregar otra persona
+            </button>
+          </div>
+        }
+      </section>
+    </main>
+  </div>
+  </div>
+
+  @if (auth.canEdit()) {
+    <footer class="intake-scroll-save">
+      <button type="button" class="btn btn-secondary btn-gold--xl" (click)="save()">
+        @if (storeApi.currentId()) {
+          Actualizar información del adulto mayor
+        } @else {
+          Guardar información del adulto mayor
+        }
+      </button>
+    </footer>
+  }
+  </div>
+</div>

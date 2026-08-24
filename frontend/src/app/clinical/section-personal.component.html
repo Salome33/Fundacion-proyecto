@@ -1,0 +1,233 @@
+<div [formGroup]="form">
+  <section class="section-card">
+    <h2>Contrato Nº</h2>
+    <div class="field-grid">
+      <label class="field-full">
+        Número de contrato
+        <input formControlName="contratoNumero" />
+      </label>
+    </div>
+  </section>
+
+  <section class="section-card" formGroupName="personal">
+    <h2>Información personal</h2>
+    <div class="personal-with-photo">
+      <div class="field-grid">
+        <label>Fecha de ingreso<input type="date" formControlName="fechaIngreso" /></label>
+        <label>Fecha de actualización<input type="date" formControlName="fechaActualizacion" /></label>
+        <label>Modalidad<input formControlName="modalidad" /></label>
+        <label class="field-full"
+          >Nombre y apellidos<input formControlName="nombreApellidos"
+        /></label>
+        <label>Identificación<input formControlName="identificacion" /></label>
+        <label>Lugar y fecha de expedición<input formControlName="lugarFechaExpedicion" /></label>
+        <label>Lugar y fecha de nacimiento<input formControlName="lugarFechaNacimiento" /></label>
+        <label>Edad<input formControlName="edad" /></label>
+        <label>Rh<input formControlName="rh" /></label>
+        <label
+          >Sexo
+          <select formControlName="sexo">
+            <option value="">—</option>
+            <option>Femenino</option>
+            <option>Masculino</option>
+            <option>Otro</option>
+          </select>
+        </label>
+        <label>Estado civil<input formControlName="estadoCivil" /></label>
+        <label>Nombre del cónyuge<input formControlName="nombreConyuge" /></label>
+        <label>Estudios cursados<input formControlName="estudios" /></label>
+        <label>EPS<input formControlName="eps" /></label>
+        <label>Régimen<input formControlName="regimen" /></label>
+        <label>Lugar de atención<input formControlName="lugarAtencion" /></label>
+        <label>Servicios funerarios<input formControlName="serviciosFunerarios" /></label>
+        <label>Profesión<input formControlName="profesion" /></label>
+        <label>Confesión religiosa<input formControlName="confesionReligiosa" /></label>
+      </div>
+      <div class="photo-attach-col">
+        <app-photo-attach
+          formControlName="foto"
+          header="Anexar foto"
+          sizeHint="3,5 × 4,5 cm"
+          hint="Anexar foto del adulto mayor"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="section-card" formGroupName="economica">
+    <h2>Información económica</h2>
+    <div class="field-grid">
+      <label class="field-full"
+        >Los ingresos económicos son de<input formControlName="ingresosDe"
+      /></label>
+      <label class="field-full"
+        >Recibe apoyo de entes gubernamentales<input formControlName="apoyoGubernamental"
+      /></label>
+      <label class="field-full"
+        >El lugar donde residía es de<input formControlName="viviendaTipo"
+      /></label>
+      <label class="field-full">Dirección<input formControlName="direccion" /></label>
+    </div>
+  </section>
+
+  <section class="section-card" formGroupName="familiar">
+    <h2>Información familiar y social</h2>
+    <div class="field-grid">
+      <label>Nombre de la madre<input formControlName="nombreMadre" /></label>
+      <label>Nombre del padre<input formControlName="nombrePadre" /></label>
+      <label class="field-full"
+        >¿Con quién vive actualmente?<input formControlName="conQuienVive"
+      /></label>
+      <label class="field-full"
+        >Principal cuidador<input formControlName="cuidadorPrincipal"
+      /></label>
+      <label class="field-full"
+        >Familiares cercanos<input formControlName="familiaresCercanos"
+      /></label>
+      <label>Frecuencia de visitas<input formControlName="frecuenciaVisitas" /></label>
+      <label class="field-full"
+        >Relación con la familia<textarea formControlName="relacionFamilia"></textarea
+      ></label>
+      <label class="field-full"
+        >Persona para decisiones en emergencia<input formControlName="decisionEmergencia"
+      /></label>
+      <label class="field-full"
+        >Actividades sociales<textarea formControlName="actividadesSociales"></textarea
+      ></label>
+      <label class="field-full"
+        >Antecedentes abandono / maltrato<textarea
+          formControlName="antecedentesMaltrato"
+        ></textarea
+      ></label>
+      <label class="field-full"
+        >Expectativas de la familia<textarea formControlName="expectativas"></textarea
+      ></label>
+      <label class="field-full"
+        >Razón principal del ingreso<textarea formControlName="razonIngreso"></textarea
+      ></label>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <h2>Hijos</h2>
+    @if (hijos.length === 0) {
+      <div class="empty-block">
+        <p>Si aplica, agregue cada hijo con su contacto.</p>
+        <button type="button" class="btn" (click)="formApi.addHijo()">+ Agregar hijo</button>
+      </div>
+    } @else {
+      <div formArrayName="hijos">
+        @for (row of hijos.controls; track $index) {
+          <div class="item-card" [formGroupName]="$index">
+            <div class="item-card-head">
+              <span>Hijo {{ $index + 1 }}</span>
+              <button type="button" class="link-remove" (click)="formApi.removeHijo($index)">
+                Quitar
+              </button>
+            </div>
+            <div class="field-grid">
+              <label>Nombre<input formControlName="nombre" /></label>
+              <label>Contacto<input formControlName="contacto" /></label>
+              <label>Correo<input formControlName="email" /></label>
+            </div>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-secondary" (click)="formApi.addHijo()">
+        + Agregar otro hijo
+      </button>
+    }
+  </section>
+
+  <section class="section-card">
+    <h2>Referencias personales y acudientes</h2>
+    <h3>Referencias personales</h3>
+    @if (referencias.length === 0) {
+      <div class="empty-block">
+        <p>Agregue referencias personales del adulto mayor.</p>
+        <button type="button" class="btn" (click)="formApi.addReferencia()">
+          + Agregar referencia
+        </button>
+      </div>
+    } @else {
+      <div formArrayName="referencias">
+        @for (ref of referencias.controls; track $index) {
+          <div class="item-card" [formGroupName]="$index">
+            <div class="item-card-head">
+              <span>Referencia {{ $index + 1 }}</span>
+              @if ($index > 0) {
+                <button
+                  type="button"
+                  class="link-remove"
+                  (click)="formApi.removeReferencia($index)"
+                >
+                  Quitar
+                </button>
+              }
+            </div>
+            <div class="field-grid">
+              <label>Nombre<input formControlName="nombre" /></label>
+              <label>Contacto<input formControlName="contacto" /></label>
+              <label>Dirección<input formControlName="direccion" /></label>
+              <label>Relación<input formControlName="relacion" /></label>
+            </div>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-secondary" (click)="formApi.addReferencia()">
+        + Agregar referencia
+      </button>
+    }
+
+    <h3>Acudientes</h3>
+    @if (acudientes.length === 0) {
+      <div class="empty-block">
+        <p>Registre acudiente(s) responsables.</p>
+        <button type="button" class="btn" (click)="formApi.addAcudiente()">
+          + Agregar acudiente
+        </button>
+      </div>
+    } @else {
+      <div formArrayName="acudientes">
+        @for (ac of acudientes.controls; track $index) {
+            <div class="item-card" [formGroupName]="$index">
+            <div class="item-card-head">
+              <span>Acudiente {{ $index + 1 }}</span>
+              @if ($index > 0) {
+                <button type="button" class="link-remove" (click)="formApi.removeAcudiente($index)">
+                  Quitar
+                </button>
+              }
+            </div>
+            <div class="acudiente-with-photo">
+              <div class="field-grid">
+                <label>Nombre<input formControlName="nombre" /></label>
+                <label>Identificación<input formControlName="identificacion" /></label>
+                <label>Contacto<input formControlName="contacto" /></label>
+                <label>Correo<input formControlName="email" /></label>
+                <label class="field-full">Dirección<input formControlName="direccion" /></label>
+                <label>Ingresos dependen de<input formControlName="ingresosDependen" /></label>
+                <label>Parentesco<input formControlName="parentesco" /></label>
+              </div>
+              <div class="photo-attach-col">
+                <app-photo-attach
+                  formControlName="foto"
+                  header="Anexar foto"
+                  sizeHint="3,5 × 4,5 cm"
+                  hint="Anexar foto de acudiente"
+                />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      <button type="button" class="btn btn-secondary" (click)="formApi.addAcudiente()">
+        + Agregar acudiente
+      </button>
+    }
+
+    <label class="field-full" style="margin-top: 1rem"
+      >Observaciones<textarea formControlName="observacionesGenerales"></textarea
+    ></label>
+  </section>
+</div>

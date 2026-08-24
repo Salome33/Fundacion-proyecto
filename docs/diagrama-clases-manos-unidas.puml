@@ -1,0 +1,255 @@
+@startuml diagrama-clases-manos-unidas
+' Fundación Manos Unidas de Dios — Historia Clínica
+' Visualizar: https://www.plantuml.com/plantuml/uml
+' Canvas interactivo: canvases/diagrama-clases-manos-unidas.canvas.tsx
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam class {
+  BackgroundColor #FFFEF9
+  BorderColor #C8922D
+  ArrowColor #6D6053
+}
+left to right direction
+
+' ═══════════════════════════════════════════════════════════════════════════
+' ENTIDADES (tablas / modelos de dominio)
+' ═══════════════════════════════════════════════════════════════════════════
+package "Dominio — Entidades" #FFF0C8 {
+
+  entity "FichaClinica\n(IntakeRecord)" as FichaClinica {
+    * id : string <<PK>>
+    --
+    createdAt : string
+    updatedAt : string
+    nombre : string
+    identificacion : string
+    data : JSON
+  }
+
+  entity "CitaMedica\n(MedicalAppointment)" as CitaMedica {
+    * id : string <<PK>>
+    --
+    * patientKey : string <<FK>>
+    patientNombre : string
+    patientIdentificacion : string
+    tipoCita : string
+    fecha : string
+    hora : string
+    nombreMedico : string
+    finalizada : boolean
+    finalizadaAt : string
+    createdAt : string
+  }
+
+  entity "SignoVitalDiario\n(DailyVitalsEntry)" as SignoVitalDiario {
+    * id : string <<PK>>
+    --
+    * patientKey : string <<FK>>
+    patientNombre : string
+    patientIdentificacion : string
+    fecha : string
+    turno : manana|mediodia|tarde
+    ta : string
+    fc : string
+    fr : string
+    spo2 : string
+    createdAt : string
+  }
+
+  entity "NotaEnfermeria\n(NursingNote)" as NotaEnfermeria {
+    * id : string <<PK>>
+    --
+    * patientKey : string <<FK>>
+    patientNombre : string
+    patientIdentificacion : string
+    fecha : string
+    hora : string
+    detalle : text
+    createdAt : string
+  }
+
+  entity "SesionAuth\n(AuthSession)" as SesionAuth {
+    username : string
+    role : coordinador|junta
+    displayName : string
+  }
+
+  entity "AssessmentRecord\n(Java)" as AssessmentRecord {
+    * id : String <<PK>>
+    --
+    savedAt : Instant
+    data : Map
+  }
+
+  class FormularioClinico <<FormGroup>> {
+    personal : FormGroup
+    economica : FormGroup
+    clinica : FormGroup
+    examenFisico : FormGroup
+    signosVitales : FormGroup
+    escalas : FormGroup
+    hijos : FormArray
+    medicamentos : FormArray
+    profesionales : FormArray
+  }
+}
+
+' ═══════════════════════════════════════════════════════════════════════════
+' SERVICIOS FRONTEND
+' ═══════════════════════════════════════════════════════════════════════════
+package "Angular — Servicios" #FFF8E1 {
+
+  class IntakeStoreService {
+    + records : Signal
+    + currentId : Signal
+    --
+    + createNew()
+    + open(id)
+    + syncFromForm()
+    + commitCurrentIntake()
+    + saveToServer()
+    + hydrateFromServer()
+  }
+
+  class ClinicalFormService {
+    + form : FormGroup
+    --
+    + loadFromRecord()
+    + resetForNewIntake()
+    + getSanitizedRawValue()
+  }
+
+  class RegisteredPatientService {
+    + findRecord()
+    + resolvePatient()
+    + isRegistered()
+    + normalizeName()
+    + normalizeDocument()
+  }
+
+  class MedicalAppointmentsService {
+    + appointments : Signal
+    --
+    + addAppointment()
+    + markFinalized()
+    + allSorted()
+    + forPatient()
+  }
+
+  class DailyVitalsService {
+    + entries : Signal
+    --
+    + saveShift()
+    + forPatientOnDate()
+  }
+
+  class NursingNotesService {
+    + notes : Signal
+    --
+    + addNote()
+    + forPatient()
+  }
+
+  class AuthService {
+    + session : Signal
+    + isLoggedIn
+    + canEdit
+    --
+    + login()
+    + logout()
+  }
+
+  class ScratchSceneService {
+    + init()
+    + loadModel()
+    + exportPaintImage()
+  }
+}
+
+' ═══════════════════════════════════════════════════════════════════════════
+' BACKEND
+' ═══════════════════════════════════════════════════════════════════════════
+package "Spring Boot — API" #E8F5E9 {
+
+  class AssessmentController {
+    + GET /api/assessments
+    + POST /api/assessments
+    + PUT /api/assessments/{id}
+    + DELETE /api/assessments
+  }
+
+  class ModelController {
+    + GET /api/model/human.obj
+  }
+
+  class HealthController {
+    + GET /api/health
+  }
+}
+
+' ═══════════════════════════════════════════════════════════════════════════
+' VISTAS
+' ═══════════════════════════════════════════════════════════════════════════
+package "Angular — Vistas" #FCE4EC {
+
+  class ClinicalIntakeComponent
+  class HomeViewComponent
+  class RecordsListViewComponent
+  class MedicalAppointmentsPanelComponent
+  class DailyVitalsPanelComponent
+  class NursingNotesPanelComponent
+  class ClinicalBodyScratchComponent
+  class LoginViewComponent
+  class AuthGuard <<guard>>
+  class EditGuard <<guard>>
+}
+
+' ═══════════════════════════════════════════════════════════════════════════
+' RELACIONES ENTIDADES
+' ═══════════════════════════════════════════════════════════════════════════
+FichaClinica ||--o{ CitaMedica : patientKey
+FichaClinica ||--o{ SignoVitalDiario : patientKey
+FichaClinica ||--o{ NotaEnfermeria : patientKey
+FichaClinica ||--|| FormularioClinico : data
+FichaClinica ..> AssessmentRecord : HTTP sync
+
+' ═══════════════════════════════════════════════════════════════════════════
+' RELACIONES SERVICIOS
+' ═══════════════════════════════════════════════════════════════════════════
+IntakeStoreService "1" *-- "0..*" FichaClinica
+ClinicalFormService "1" *-- FormularioClinico
+MedicalAppointmentsService "1" *-- "0..*" CitaMedica
+DailyVitalsService "1" *-- "0..*" SignoVitalDiario
+NursingNotesService "1" *-- "0..*" NotaEnfermeria
+AuthService "1" *-- "0..1" SesionAuth
+AssessmentController "1" *-- "0..*" AssessmentRecord
+
+IntakeStoreService --> ClinicalFormService
+RegisteredPatientService --> IntakeStoreService
+MedicalAppointmentsService --> RegisteredPatientService
+DailyVitalsService --> RegisteredPatientService
+NursingNotesService --> RegisteredPatientService
+IntakeStoreService ..> AssessmentController : HttpClient
+
+ClinicalIntakeComponent ..> ClinicalFormService
+ClinicalIntakeComponent ..> IntakeStoreService
+MedicalAppointmentsPanelComponent ..> MedicalAppointmentsService
+DailyVitalsPanelComponent ..> DailyVitalsService
+NursingNotesPanelComponent ..> NursingNotesService
+ClinicalBodyScratchComponent ..> ScratchSceneService
+LoginViewComponent ..> AuthService
+AuthGuard ..> AuthService
+EditGuard ..> AuthService
+
+note bottom of RegisteredPatientService
+  Valida ficha registrada antes de
+  citas, signos vitales diarios y notas
+end note
+
+note bottom of AuthService
+  coordinador → canEdit = true
+  junta → solo lectura
+end note
+
+@enduml

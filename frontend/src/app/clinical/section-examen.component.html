@@ -1,0 +1,286 @@
+<div [formGroup]="form">
+  <section class="section-card" formGroupName="examenFisico">
+    <h2>Examen físico</h2>
+    <div class="field-grid">
+      @for (
+        field of [
+          ['piel', 'Piel'],
+          ['cabeza', 'Cabeza'],
+          ['ojos', 'Ojos'],
+          ['nariz', 'Nariz'],
+          ['oidos', 'Oídos'],
+          ['boca', 'Boca'],
+          ['cuello', 'Cuello'],
+          ['torax', 'Tórax'],
+          ['abdomen', 'Abdomen'],
+          ['extSuperiores', 'Extremidades superiores'],
+          ['extInferiores', 'Extremidades inferiores'],
+          ['columna', 'Columna'],
+          ['otros', 'Otros'],
+          ['urologico', 'Urológico'],
+        ];
+        track field[0]
+      ) {
+        <label>{{ field[1] }}<textarea [formControlName]="$any(field[0])"></textarea></label>
+      }
+    </div>
+    <label
+      >Incontinencia urinaria
+      <select formControlName="incontinencia">
+        <option value="">—</option>
+        <option>Sí</option>
+        <option>No</option>
+      </select>
+    </label>
+    <label><input type="checkbox" formControlName="panalDia" /> Pañal — día</label>
+    <label><input type="checkbox" formControlName="panalNoche" /> Pañal — noche</label>
+  </section>
+
+  <section class="section-card" formGroupName="revisionSistemas">
+    <h2>Revisión por sistemas</h2>
+    <div class="field-grid">
+      @for (
+        field of [
+          ['respiratorio', 'Respiratorio'],
+          ['neurologico', 'Neurológico'],
+          ['endocrino', 'Endocrino'],
+          ['musculoEsqueletico', 'Músculo esquelético'],
+          ['hematopoyetico', 'Hematopoyético'],
+          ['linforreticular', 'Linforreticular'],
+          ['psiquiatrico', 'Psiquiátrico'],
+          ['articular', 'Articular'],
+          ['cardiovascular', 'Cardiovascular'],
+          ['gastrointestinal', 'Gastrointestinal'],
+          ['ginecologico', 'Ginecológico'],
+        ];
+        track field[0]
+      ) {
+        <label>{{ field[1] }}<textarea [formControlName]="$any(field[0])"></textarea></label>
+      }
+    </div>
+  </section>
+
+  <section class="section-card">
+    <h2>Examen mental y antecedentes</h2>
+    <div class="field-grid" formGroupName="examenMental">
+      @for (
+        field of [
+          ['actitud', 'Actitud'],
+          ['atencion', 'Atención'],
+          ['conciencia', 'Conciencia'],
+          ['orientacion', 'Orientación'],
+          ['lenguaje', 'Lenguaje'],
+          ['memoria', 'Memoria'],
+          ['sueno', 'Sueño'],
+          ['alimentacion', 'Alimentación'],
+          ['retrasoMental', 'Retraso mental'],
+          ['sintomasDepresivos', 'Sintomatología depresiva'],
+          ['sintomasAnsiedad', 'Ansiedad'],
+          ['pensamientoIncoherente', 'Pensamiento incoherente'],
+        ];
+        track field[0]
+      ) {
+        <label>{{ field[1] }}<textarea [formControlName]="$any(field[0])"></textarea></label>
+      }
+    </div>
+    <div class="field-grid" formGroupName="antecedentes" style="margin-top: 1rem">
+      <label>Quirúrgicos<textarea formControlName="quirurgicos"></textarea></label>
+      <label>Patológicos<textarea formControlName="patologicos"></textarea></label>
+      <label>Farmacológicos<textarea formControlName="farmacologicos"></textarea></label>
+      <label>Alérgicos<textarea formControlName="alergicos"></textarea></label>
+      <label>Cáncer<textarea formControlName="cancer"></textarea></label>
+      <label
+        >Caídas (propia altura)
+        <select formControlName="caidasPropiaAltura">
+          <option value="">—</option>
+          <option>Sí</option>
+          <option>No</option>
+        </select>
+      </label>
+      <label>Riesgo de caída<textarea formControlName="riesgoCaida"></textarea></label>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <h2>Signos vitales</h2>
+    <div class="field-grid" formGroupName="signosVitales">
+      <label>TA<input formControlName="ta" /></label>
+      <label>FC<input formControlName="fc" /></label>
+      <label>FR<input formControlName="fr" /></label>
+      <label>SPO2<input formControlName="spo2" /></label>
+      <label>Peso (kg)<input type="number" formControlName="peso" /></label>
+      <label>Talla (cm)<input type="number" formControlName="talla" /></label>
+      <label>IMC<input formControlName="imc" type="number" step="0.1" /></label>
+    </div>
+    <h3>Descripción gráfica del cuerpo</h3>
+    <div class="info-box">
+      Próximamente: modelo 3D con rayado (Three.js). Registre hallazgos en observaciones.
+    </div>
+    <label class="field-full"
+      >Observaciones<textarea formControlName="descripcionCuerpoObservaciones" rows="5"></textarea
+    ></label>
+  </section>
+
+  <section class="section-card" formGroupName="escalas">
+    <h2>Escalas gerontogeriátricas</h2>
+    <label class="field-full"
+      >Observaciones<textarea formControlName="escalasObservaciones" rows="3"></textarea
+    ></label>
+
+    <app-scale-form [scale]="barthel" [group]="$any(escalasGroup.get('barthel'))" />
+    <app-scale-form [scale]="lawton" [group]="$any(escalasGroup.get('lawton'))" />
+
+    <div class="scale-block">
+      <h3>Tinetti — Equilibrio</h3>
+      <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
+      <div [formGroup]="tinettiBalanceGroup()">
+      <ul class="scale-question-list">
+        @for (item of tinettiBalance; track item.id) {
+          <li class="scale-question-item scale-question-item--tinetti">
+            <p class="scale-question-text">{{ item.label }}</p>
+            <div class="scale-question-options scale-question-options--stack">
+              @for (opt of item.options; track opt.label) {
+                <label class="scale-question-option">
+                  <input
+                    type="radio"
+                    [name]="'tb_' + item.id"
+                    [checked]="tinettiBalanceGroup().get(item.id)?.value === opt.score"
+                    (change)="setTinetti('balance', item.id, opt.score)"
+                  />
+                  <span class="scale-option-label">{{ opt.label }}</span>
+                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
+                    opt.score
+                  }}</span>
+                </label>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+      <p class="scale-total"><strong>Total equilibrio: {{ tinettiTotal('balance') }} / 15</strong></p>
+      </div>
+    </div>
+
+    <div class="scale-block">
+      <h3>Tinetti — Marcha</h3>
+      <p class="scale-sub">{{ tinettiGaitIntro }}</p>
+      <div [formGroup]="tinettiGaitGroup()">
+      <ul class="scale-question-list">
+        @for (item of tinettiGait; track item.id) {
+          <li class="scale-question-item scale-question-item--tinetti">
+            <p class="scale-question-text">{{ item.label }}</p>
+            <div class="scale-question-options scale-question-options--stack">
+              @for (opt of item.options; track opt.label) {
+                <label class="scale-question-option">
+                  <input
+                    type="radio"
+                    [name]="'tg_' + item.id"
+                    [checked]="tinettiGaitGroup().get(item.id)?.value === opt.score"
+                    (change)="setTinetti('gait', item.id, opt.score)"
+                  />
+                  <span class="scale-option-label">{{ opt.label }}</span>
+                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
+                    opt.score
+                  }}</span>
+                </label>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+      <p class="scale-total">
+        <strong
+          >Marcha: {{ tinettiTotal('gait') }} / 12 · Total:
+          {{ tinettiTotal('balance') + tinettiTotal('gait') }} / 27</strong
+        >
+      </p>
+      </div>
+    </div>
+
+    <div class="scale-block">
+      <h3>Pfeiffer (SPMSQ)</h3>
+      <p class="scale-sub">{{ pfeifferIntro }}</p>
+      <div [formGroup]="pfeifferGroup()">
+        <ul class="scale-question-list">
+          @for (q of pfeifferQ; track q.id) {
+            <li class="scale-question-item scale-question-item--pfeiffer">
+              <label class="scale-question-label scale-question-label--pfeiffer">
+                <input type="checkbox" [formControlName]="q.id" />
+                <span class="scale-question-text">
+                  {{ q.label }}
+                  @if (q.hint) {
+                    <em class="scale-question-hint">({{ q.hint }})</em>
+                  }
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+        <p class="scale-total">
+          Errores: {{ pfeifferErrors() }} — {{ interpretPfeiffer(pfeifferErrors()) }}
+        </p>
+      </div>
+    </div>
+
+    <div class="scale-block">
+      <h3>GDS Yesavage</h3>
+      <p class="scale-sub">{{ gdsIntro }}</p>
+      <div [formGroup]="gdsGroup()">
+        <ul class="scale-question-list">
+          @for (q of gdsQ; track q.id) {
+            <li class="scale-question-item scale-question-item--gds">
+              <p class="scale-question-text">{{ q.label }}</p>
+              <p class="scale-question-detail">{{ q.detail }}</p>
+              <div class="scale-question-options scale-question-options--stack">
+                <label class="scale-question-option"
+                  ><input type="radio" [formControlName]="q.id" value="si" /> Sí</label
+                >
+                <label class="scale-question-option"
+                  ><input type="radio" [formControlName]="q.id" value="no" /> No</label
+                >
+              </div>
+            </li>
+          }
+        </ul>
+        <p class="scale-total">Total: {{ gdsTotal() }} — {{ interpretGds(gdsTotal()) }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <h2>VGI — Referencia</h2>
+    <div class="info-box">
+      Valoración gerontogeriátrica integral: proceso interdisciplinario para definir el plan de
+      atención individualizado del adulto mayor.
+    </div>
+  </section>
+
+  <section class="section-card">
+    <h2>Concepto institucional y firmas</h2>
+    <div formGroupName="conceptoInstitucional" class="field-grid">
+      <label>Fecha<input type="date" formControlName="fecha" /></label>
+      <label
+        >Concepto
+        <select formControlName="favorable">
+          <option value="">—</option>
+          <option value="si">Favorable</option>
+          <option value="no">No favorable</option>
+        </select>
+      </label>
+      <label class="field-full"
+        >Justificación<textarea formControlName="justificacion" rows="4"></textarea
+      ></label>
+    </div>
+    <div formGroupName="declaracion" class="field-grid" style="margin-top: 1rem">
+      <label>Nombre contratante<input formControlName="nombre" /></label>
+      <label>Documento<input formControlName="documento" /></label>
+      <label>Fecha<input type="date" formControlName="fecha" /></label>
+    </div>
+    <div formGroupName="profesionales" class="field-grid" style="margin-top: 1rem">
+      <label>Profesional<input formControlName="nombre" /></label>
+      <label>Cargo<input formControlName="cargo" /></label>
+      <label>Documento<input formControlName="documento" /></label>
+      <label>Fecha<input type="date" formControlName="fecha" /></label>
+    </div>
+  </section>
+</div>

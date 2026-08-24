@@ -1,0 +1,164 @@
+%% Casos de uso — Fundación Manos Unidas de Dios
+%% Actores FUERA del sistema = flechas directas a cada caso de uso
+%% Módulos en cajas · vertical · Coordinador IZQ · Junta DER
+%% https://mermaid.live
+
+flowchart LR
+
+    C(("Coordinador\nadministrativo"))
+
+    subgraph Sistema["Sistema Historia Clínica — Fundación Manos Unidas de Dios"]
+        direction TB
+
+        subgraph M_FCons["Fichas clínicas · consulta (Junta y Coordinador)"]
+            direction LR
+            UC_Inicio(["Ver página de inicio"])
+            UC_Listar(["Consultar listado de fichas"])
+            UC_Abrir(["Abrir ficha completa"])
+            UC_Explorar(["Explorar apartados del formulario"])
+            UC_ConsultarAp(["Consultar datos por apartado"])
+        end
+
+        subgraph M_OCons["Operación · consulta (Junta y Coordinador)"]
+            direction LR
+            UC_Calendario(["Consultar calendario de citas"])
+            UC_VerSignos(["Consultar signos vitales"])
+            UC_VerNotas(["Consultar notas de enfermería"])
+            UC_Demo(["Ver demo modelo 3D"])
+        end
+
+        subgraph M_FEdit["Fichas clínicas · edición (solo Coordinador)"]
+            direction LR
+            UC_Crear(["Crear nueva ficha clínica"])
+            UC_Actualizar(["Actualizar ficha completa"])
+            UC_Sync(["Guardar ficha en servidor"])
+            UC_EditarAp(["Editar apartado individual"])
+            UC_IngresoSec(["Diligenciar ingreso por secciones"])
+        end
+
+        subgraph M_Valor["Valoración clínica (solo Coordinador)"]
+            direction LR
+            UC_Datos(["Registrar datos de ingreso"])
+            UC_Valor(["Registrar valoración y escalas"])
+            UC_Exam(["Registrar examen físico y mental"])
+            UC_Firmas(["Registrar firmas y aprobaciones"])
+            UC_Modelo3D(["Marcar modelo corporal 3D"])
+        end
+
+        subgraph M_OEdit["Operación · edición (solo Coordinador)"]
+            direction LR
+            UC_Agendar(["Agendar cita médica"])
+            UC_Finalizar(["Marcar cita como finalizada"])
+            UC_Signos(["Registrar signos vitales por turno"])
+            UC_Nota(["Registrar nota de enfermería"])
+        end
+
+        subgraph M_Auth["Autenticación"]
+            direction LR
+            UC_Login(["Iniciar sesión"])
+            UC_Logout(["Cerrar sesión"])
+        end
+
+        M_FCons ~~~ M_OCons
+        M_OCons ~~~ M_FEdit
+        M_FEdit ~~~ M_Valor
+        M_Valor ~~~ M_OEdit
+        M_OEdit ~~~ M_Auth
+    end
+
+    J(("Junta\ndirectiva\n(solo consulta)"))
+
+    NotaJunta["Junta solo visualiza:\n• Sesión · fichas · calendario\n• Signos y notas (lectura)\n• Demo 3D · valoración vía ficha\n—\nNo agenda citas ni registra datos"]
+
+    C ~~~ Sistema ~~~ J
+    J ~~~ NotaJunta
+
+    C --> UC_Login
+    C --> UC_Logout
+    C --> UC_Inicio
+    C --> UC_Listar
+    C --> UC_Abrir
+    C --> UC_Explorar
+    C --> UC_ConsultarAp
+    C --> UC_Calendario
+    C --> UC_VerSignos
+    C --> UC_VerNotas
+    C --> UC_Demo
+    C --> UC_Crear
+    C --> UC_Actualizar
+    C --> UC_Sync
+    C --> UC_EditarAp
+    C --> UC_IngresoSec
+    C --> UC_Datos
+    C --> UC_Valor
+    C --> UC_Exam
+    C --> UC_Firmas
+    C --> UC_Modelo3D
+    C --> UC_Agendar
+    C --> UC_Finalizar
+    C --> UC_Signos
+    C --> UC_Nota
+
+    J --> UC_Login
+    J --> UC_Logout
+    J --> UC_Inicio
+    J --> UC_Listar
+    J --> UC_Abrir
+    J --> UC_Explorar
+    J --> UC_ConsultarAp
+    J --> UC_Calendario
+    J --> UC_VerSignos
+    J --> UC_VerNotas
+    J --> UC_Demo
+
+    %% Junta NO se conecta a: UC_Crear, UC_Actualizar, UC_Sync, UC_EditarAp,
+    %% UC_IngresoSec, UC_Datos, UC_Valor, UC_Exam, UC_Firmas, UC_Modelo3D,
+    %% UC_Agendar, UC_Finalizar, UC_Signos, UC_Nota
+
+    UC_Listar -. «incluye» .-> UC_Login
+    UC_Crear -. «incluye» .-> UC_Login
+    UC_Crear -. «incluye» .-> UC_Datos
+    UC_Actualizar -. «incluye» .-> UC_Sync
+    UC_Agendar -. «extiende» .-> UC_Listar
+    UC_Signos -. «extiende» .-> UC_Listar
+    UC_Nota -. «extiende» .-> UC_Listar
+    UC_Finalizar -. «extiende» .-> UC_Calendario
+    UC_Modelo3D -. «extiende» .-> UC_Abrir
+
+    style C fill:#1d4ed8,color:#fff,stroke:#1e3a8a,stroke-width:3px
+    style J fill:#475569,color:#fff,stroke:#334155,stroke-width:3px
+    style NotaJunta fill:#f1f5f9,stroke:#475569,color:#1e293b,stroke-width:2px
+    style Sistema fill:#fffbeb,stroke:#b45309,stroke-width:3px,color:#78350f
+
+    style M_Auth fill:#fef3c7,stroke:#92400e,color:#78350f,stroke-width:2px
+    style M_FCons fill:#d1fae5,stroke:#047857,color:#065f46,stroke-width:2px
+    style M_OCons fill:#ccfbf1,stroke:#0f766e,color:#115e59,stroke-width:2px
+    style M_FEdit fill:#dbeafe,stroke:#1d4ed8,color:#1e40af,stroke-width:2px
+    style M_Valor fill:#e0e7ff,stroke:#4338ca,color:#312e81,stroke-width:2px
+    style M_OEdit fill:#fce7f3,stroke:#be185d,color:#831843,stroke-width:2px
+
+    style UC_Login fill:#fde68a,stroke:#d97706,color:#78350f,stroke-width:2px
+    style UC_Logout fill:#fde68a,stroke:#d97706,color:#78350f,stroke-width:2px
+    style UC_Inicio fill:#a7f3d0,stroke:#059669,color:#064e3b,stroke-width:2px
+    style UC_Listar fill:#a7f3d0,stroke:#059669,color:#064e3b,stroke-width:2px
+    style UC_Abrir fill:#a7f3d0,stroke:#059669,color:#064e3b,stroke-width:2px
+    style UC_Explorar fill:#a7f3d0,stroke:#059669,color:#064e3b,stroke-width:2px
+    style UC_ConsultarAp fill:#a7f3d0,stroke:#059669,color:#064e3b,stroke-width:2px
+    style UC_Calendario fill:#5eead4,stroke:#0d9488,color:#134e4a,stroke-width:2px
+    style UC_VerSignos fill:#5eead4,stroke:#0d9488,color:#134e4a,stroke-width:2px
+    style UC_VerNotas fill:#5eead4,stroke:#0d9488,color:#134e4a,stroke-width:2px
+    style UC_Demo fill:#5eead4,stroke:#0d9488,color:#134e4a,stroke-width:2px
+    style UC_Crear fill:#93c5fd,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    style UC_Actualizar fill:#93c5fd,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    style UC_Sync fill:#93c5fd,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    style UC_EditarAp fill:#93c5fd,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    style UC_IngresoSec fill:#93c5fd,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    style UC_Datos fill:#c4b5fd,stroke:#6366f1,color:#312e81,stroke-width:2px
+    style UC_Valor fill:#c4b5fd,stroke:#6366f1,color:#312e81,stroke-width:2px
+    style UC_Exam fill:#c4b5fd,stroke:#6366f1,color:#312e81,stroke-width:2px
+    style UC_Firmas fill:#c4b5fd,stroke:#6366f1,color:#312e81,stroke-width:2px
+    style UC_Modelo3D fill:#c4b5fd,stroke:#6366f1,color:#312e81,stroke-width:2px
+    style UC_Agendar fill:#f9a8d4,stroke:#db2777,color:#831843,stroke-width:2px
+    style UC_Finalizar fill:#f9a8d4,stroke:#db2777,color:#831843,stroke-width:2px
+    style UC_Signos fill:#f9a8d4,stroke:#db2777,color:#831843,stroke-width:2px
+    style UC_Nota fill:#f9a8d4,stroke:#db2777,color:#831843,stroke-width:2px

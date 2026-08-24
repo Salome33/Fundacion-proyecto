@@ -1,0 +1,449 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+// Fundación Manos Unidas de Dios — Historia Clínica
+//
+// Alineado con PostgreSQL (Flyway V1): ficha_clinica.id = UUID VARCHAR(64) del cliente Angular.
+// registro_ficha_servidor.datos = copia JSON de respaldo; el formulario normalizado vive en las tablas 1:1 y 1:N.
+
+// ─── AUTENTICACIÓN ───────────────────────────────────────────────────────────
+
+Table rol_usuario {
+  id int [pk]
+  rol varchar
+  nombre varchar
+  descripcion text
+}
+
+Table usuarios {
+  id int [pk]
+  username varchar
+  password_hash varchar
+  nombres varchar
+  apellidos varchar
+  correo varchar
+  documento_identidad varchar
+  rol_id int [ref: > rol_usuario.id]
+  estado varchar
+  fecha_registro timestamp
+}
+
+Table sesiones {
+  id int [pk]
+  usuario_id int [ref: > usuarios.id]
+  inicio_at timestamp
+  fin_at timestamp
+  ip_address varchar
+}
+
+// ─── ENTIDAD CENTRAL ─────────────────────────────────────────────────────────
+
+Table ficha_clinica {
+  id varchar(64) [pk, note: 'UUID generado en Angular']
+  creado_por_id int [ref: > usuarios.id, note: 'Coordinador que creó la ficha (opcional por ahora)']
+  actualizado_por_id int [ref: > usuarios.id, note: 'Último coordinador que actualizó']
+  contrato_numero varchar
+  nombre varchar [not null]
+  identificacion varchar
+  observaciones_generales text
+  client_id varchar(64) [unique, not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table registro_ficha_servidor {
+  id int [pk]
+  ficha_id varchar(64) [unique, ref: - ficha_clinica.id]
+  guardado_en timestamp
+  datos json [note: 'JSONB — respaldo/compatibilidad del formulario completo']
+  id_cliente varchar(64) [unique, not null]
+}
+
+// ─── DATOS DEL INGRESO (1:1) ─────────────────────────────────────────────────
+
+Table datos_personales {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  fecha_ingreso date
+  fecha_actualizacion date
+  modalidad varchar
+  nombre_apellidos varchar
+  identificacion varchar
+  lugar_expedicion varchar
+  fecha_expedicion date
+  lugar_nacimiento varchar
+  fecha_nacimiento date
+  edad varchar
+  rh varchar
+  sexo varchar
+  estado_civil varchar
+  nombre_conyuge varchar
+  estudios varchar
+  eps varchar
+  regimen varchar
+  lugar_atencion varchar
+  servicios_funerarios varchar
+  profesion varchar
+  confesion_religiosa varchar
+  foto_url text
+}
+
+Table datos_economicos {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  ingresos_de varchar
+  apoyo_gubernamental varchar
+  vivienda_tipo varchar
+  direccion text
+}
+
+Table datos_familiares {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  nombre_madre varchar
+  nombre_padre varchar
+  con_quien_vive varchar
+  cuidador_principal varchar
+  familiares_cercanos text
+  frecuencia_visitas varchar
+  relacion_familia text
+  decision_emergencia varchar
+  actividades_sociales text
+  antecedentes_maltrato text
+  expectativas text
+  razon_ingreso text
+}
+
+Table perfil_clinico {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  patologia text
+  alergias_med text
+  alergias_alim text
+  alergias_otros text
+}
+
+Table autopercepcion {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  estado_salud text
+  anamnesis_aspecto text
+  anamnesis_emocional text
+  anamnesis_fisico text
+  higienico text
+  nutricional text
+  ayuda_movilizarse text
+  inmovilizacion text
+  autoriza_inmovilizacion text
+  camina_solo text
+  camina_baston text
+  silla_ruedas text
+  mss text
+  mii text
+}
+
+Table habito_tabaco {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  consume varchar
+  frecuencia varchar
+}
+
+Table habito_alcohol {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  consume varchar
+  frecuencia varchar
+}
+
+Table otra_sustancia_principal {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  nombre varchar
+  frecuencia varchar
+}
+
+Table antecedentes {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  quirurgicos text
+  patologicos text
+  farmacologicos text
+  alergicos text
+  cancer text
+}
+
+Table antecedentes_caidas {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  caidas_propia_altura text
+  riesgo_caida text
+}
+
+Table signos_vitales_ingreso {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  ta varchar
+  fc varchar
+  fr varchar
+  spo2 varchar
+  peso decimal
+  talla decimal
+  imc decimal
+}
+
+Table modelo_corporal {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  body_paint_image text
+  descripcion_observaciones text
+}
+
+Table valoracion_geriatrica {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  escalas_observaciones text
+}
+
+Table declaracion_acudiente {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+  nombre varchar
+  documento varchar
+  firma_url text
+  fecha date
+}
+
+// ─── EXÁMENES — CABECERAS (1:1) ──────────────────────────────────────────────
+
+Table examen_fisico {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+}
+
+Table revision_sistemas {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+}
+
+Table examen_mental {
+  ficha_id varchar(64) [pk, ref: - ficha_clinica.id]
+}
+
+Table incontinencia {
+  examen_fisico_id varchar(64) [pk, ref: - examen_fisico.ficha_id]
+  presenta varchar
+  momento varchar
+  lesiones text
+  ulceras text
+  hongos text
+  secreciones text
+  prolapso text
+  presencia_sonda text
+}
+
+// ─── LISTAS DEL FORMULARIO (1:N) ─────────────────────────────────────────────
+
+Table hijos {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  nombre varchar
+  contacto varchar
+  email varchar
+}
+
+Table referencias_personales {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  nombre varchar
+  contacto varchar
+  direccion text
+  relacion varchar
+  foto_url text
+}
+
+Table acudientes {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  nombre varchar
+  identificacion varchar
+  contacto varchar
+  email varchar
+  direccion text
+  ingresos_dependen varchar
+  parentesco varchar
+  foto_url text
+}
+
+Table medicamentos {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  nombre varchar
+  dosis varchar
+  horarios varchar
+}
+
+Table otras_sustancias {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  nombre varchar
+  frecuencia varchar
+}
+
+Table remisiones_especialistas {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  especialidad varchar
+  frecuencia varchar
+  tratamiento text
+}
+
+Table profesionales_diligencia {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  orden int
+  nombre varchar
+  cargo varchar
+  documento varchar
+  fecha date
+  firma_url text
+}
+
+Table conceptos_aprobacion {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  tipo varchar [note: 'institucional | independiente | familia']
+  fecha date
+  favorable varchar
+  justificacion text
+}
+
+Table firmas_aprobacion {
+  id int [pk]
+  concepto_id int [ref: > conceptos_aprobacion.id]
+  orden int
+  firma_url text
+}
+
+Table respuestas_escala {
+  id int [pk]
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  escala varchar
+  item_id varchar
+  valor varchar
+  puntaje int
+}
+
+// ─── DETALLE DE EXÁMENES (1:N) ───────────────────────────────────────────────
+
+Table hallazgos_examen_fisico {
+  id int [pk]
+  examen_fisico_id varchar(64) [ref: > examen_fisico.ficha_id]
+  region varchar
+  campo varchar
+  valor text
+}
+
+Table valores_sistema {
+  id int [pk]
+  revision_id varchar(64) [ref: > revision_sistemas.ficha_id]
+  sistema varchar
+  valor text
+}
+
+Table campos_examen_mental {
+  id int [pk]
+  examen_mental_id varchar(64) [ref: > examen_mental.ficha_id]
+  campo varchar
+  valor text
+}
+
+// ─── MÓDULOS OPERATIVOS (1:N) ────────────────────────────────────────────────
+
+Table citas_medicas {
+  id varchar(64) [pk, note: 'UUID']
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  tipo_cita varchar
+  fecha date
+  hora varchar
+  nombre_medico varchar
+  finalizada boolean
+  finalizada_at timestamp
+  created_at timestamp
+}
+
+Table signos_vitales_diarios {
+  id varchar(64) [pk, note: 'UUID']
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  fecha date
+  turno varchar [note: 'manana | mediodia | tarde']
+  ta varchar
+  fc varchar
+  fr varchar
+  spo2 varchar
+  created_at timestamp
+
+  Indexes {
+    (ficha_id, fecha, turno) [unique]
+  }
+}
+
+Table notas_enfermeria {
+  id varchar(64) [pk, note: 'UUID']
+  ficha_id varchar(64) [ref: > ficha_clinica.id]
+  fecha date
+  hora varchar
+  detalle text
+  created_at timestamp
+}
+
+// ─── AGRUPACIÓN VISUAL EN DBDIAGRAM ──────────────────────────────────────────
+
+TableGroup autenticacion {
+  rol_usuario
+  usuarios
+  sesiones
+}
+
+TableGroup ficha_ingreso {
+  ficha_clinica
+  registro_ficha_servidor
+  datos_personales
+  datos_economicos
+  datos_familiares
+  perfil_clinico
+  autopercepcion
+  habito_tabaco
+  habito_alcohol
+  otra_sustancia_principal
+  antecedentes
+  antecedentes_caidas
+  signos_vitales_ingreso
+  modelo_corporal
+  valoracion_geriatrica
+  declaracion_acudiente
+}
+
+TableGroup contactos {
+  hijos
+  referencias_personales
+  acudientes
+}
+
+TableGroup clinico_listas {
+  medicamentos
+  otras_sustancias
+  remisiones_especialistas
+  respuestas_escala
+}
+
+TableGroup examenes {
+  examen_fisico
+  incontinencia
+  hallazgos_examen_fisico
+  revision_sistemas
+  valores_sistema
+  examen_mental
+  campos_examen_mental
+}
+
+TableGroup cierre_firmas {
+  conceptos_aprobacion
+  firmas_aprobacion
+  profesionales_diligencia
+}
+
+TableGroup operativos {
+  citas_medicas
+  signos_vitales_diarios
+  notas_enfermeria
+}

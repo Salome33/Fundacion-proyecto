@@ -1,0 +1,180 @@
+@startuml diagrama-casos-uso-manos-unidas
+' Vertical en el centro + Coordinador IZQUIERDA + Junta DERECHA
+' Junta = solo consulta/visualización | Coordinador = consulta + edición
+' https://www.plantuml.com/plantuml/uml
+
+skinparam actorStyle awesome
+skinparam linetype ortho
+skinparam nodesep 18
+skinparam ranksep 28
+skinparam padding 10
+skinparam ArrowThickness 1
+skinparam usecase {
+  BackgroundColor white
+  BorderColor #374151
+  FontColor #111827
+  FontSize 11
+}
+skinparam rectangle {
+  BorderColor #b45309
+  BackgroundColor #fffbeb
+}
+skinparam package {
+  BorderColor #64748b
+  BackgroundColor #f8fafc
+  FontStyle bold
+  FontSize 12
+}
+skinparam note {
+  BackgroundColor #f1f5f9
+  BorderColor #475569
+  FontColor #1e293b
+}
+
+scale max 1400 width
+scale max 2200 height
+
+left to right direction
+
+actor "Coordinador\nadministrativo" as Coordinador #1d4ed8
+
+rectangle "Sistema Historia Clínica\nFundación Manos Unidas de Dios" {
+
+  package "Autenticación" #fef3c7 {
+    usecase "Iniciar sesión" as UC_Login
+    usecase "Cerrar sesión" as UC_Logout
+    UC_Login -[hidden]right- UC_Logout
+  }
+
+  package "Fichas clínicas · consulta\n(Junta y Coordinador)" #d1fae5 {
+    usecase "Ver página de inicio" as UC_Inicio
+    usecase "Consultar listado de fichas" as UC_Listar
+    usecase "Abrir ficha completa" as UC_Abrir
+    usecase "Explorar apartados del formulario" as UC_Explorar
+    usecase "Consultar datos por apartado" as UC_ConsultarAp
+    UC_Inicio -[hidden]right- UC_Listar
+    UC_Listar -[hidden]right- UC_Abrir
+    UC_Abrir -[hidden]right- UC_Explorar
+    UC_Explorar -[hidden]right- UC_ConsultarAp
+  }
+
+  package "Operación · consulta\n(Junta y Coordinador)" #ccfbf1 {
+    usecase "Consultar calendario de citas" as UC_Calendario
+    usecase "Consultar signos vitales" as UC_VerSignos
+    usecase "Consultar notas de enfermería" as UC_VerNotas
+    usecase "Ver demo modelo 3D" as UC_Demo
+    UC_Calendario -[hidden]right- UC_VerSignos
+    UC_VerSignos -[hidden]right- UC_VerNotas
+    UC_VerNotas -[hidden]right- UC_Demo
+  }
+
+  package "Fichas clínicas · edición\n(solo Coordinador)" #dbeafe {
+    usecase "Crear nueva ficha clínica" as UC_Crear
+    usecase "Actualizar ficha completa" as UC_Actualizar
+    usecase "Guardar ficha en servidor" as UC_Sync
+    usecase "Editar apartado individual" as UC_EditarAp
+    usecase "Diligenciar ingreso por secciones" as UC_IngresoSec
+    UC_Crear -[hidden]right- UC_Actualizar
+    UC_Actualizar -[hidden]right- UC_Sync
+    UC_Sync -[hidden]right- UC_EditarAp
+    UC_EditarAp -[hidden]right- UC_IngresoSec
+  }
+
+  package "Valoración clínica\n(solo Coordinador)" #e0e7ff {
+    usecase "Registrar datos de ingreso" as UC_Datos
+    usecase "Registrar valoración y escalas" as UC_Valor
+    usecase "Registrar examen físico y mental" as UC_Exam
+    usecase "Registrar firmas y aprobaciones" as UC_Firmas
+    usecase "Marcar modelo corporal 3D" as UC_Modelo3D
+    UC_Datos -[hidden]right- UC_Valor
+    UC_Valor -[hidden]right- UC_Exam
+    UC_Exam -[hidden]right- UC_Firmas
+    UC_Firmas -[hidden]right- UC_Modelo3D
+  }
+
+  package "Operación · edición\n(solo Coordinador)" #fce7f3 {
+    usecase "Agendar cita médica" as UC_Agendar
+    usecase "Marcar cita como finalizada" as UC_Finalizar
+    usecase "Registrar signos vitales por turno" as UC_Signos
+    usecase "Registrar nota de enfermería" as UC_Nota
+    UC_Agendar -[hidden]right- UC_Finalizar
+    UC_Finalizar -[hidden]right- UC_Signos
+    UC_Signos -[hidden]right- UC_Nota
+  }
+
+  UC_Logout -[hidden]down- UC_Inicio
+  UC_ConsultarAp -[hidden]down- UC_Calendario
+  UC_Demo -[hidden]down- UC_Crear
+  UC_IngresoSec -[hidden]down- UC_Datos
+  UC_Modelo3D -[hidden]down- UC_Agendar
+}
+
+actor "Junta\ndirectiva" as Junta #475569
+
+note right of Junta
+  **Solo visualiza / consulta:**
+  · Iniciar y cerrar sesión
+  · Página de inicio y listado de fichas
+  · Abrir ficha y explorar apartados
+  · Calendario de citas (solo lectura)
+  · Signos vitales (solo lectura)
+  · Notas de enfermería (solo lectura)
+  · Demo del modelo 3D
+  · Valoración clínica (vía ficha abierta)
+  --
+  **No puede:** agendar citas,
+  registrar signos, registrar notas
+  ni editar fichas o valoraciones.
+end note
+
+' --- Coordinador: consulta + edición (25 casos) ---
+Coordinador -[#1d4ed8]-> UC_Login
+Coordinador -[#1d4ed8]-> UC_Logout
+Coordinador -[#1d4ed8]-> UC_Inicio
+Coordinador -[#1d4ed8]-> UC_Listar
+Coordinador -[#1d4ed8]-> UC_Abrir
+Coordinador -[#1d4ed8]-> UC_Explorar
+Coordinador -[#1d4ed8]-> UC_ConsultarAp
+Coordinador -[#1d4ed8]-> UC_Calendario
+Coordinador -[#1d4ed8]-> UC_VerSignos
+Coordinador -[#1d4ed8]-> UC_VerNotas
+Coordinador -[#1d4ed8]-> UC_Demo
+Coordinador -[#1d4ed8]-> UC_Crear
+Coordinador -[#1d4ed8]-> UC_Actualizar
+Coordinador -[#1d4ed8]-> UC_Sync
+Coordinador -[#1d4ed8]-> UC_EditarAp
+Coordinador -[#1d4ed8]-> UC_IngresoSec
+Coordinador -[#1d4ed8]-> UC_Datos
+Coordinador -[#1d4ed8]-> UC_Valor
+Coordinador -[#1d4ed8]-> UC_Exam
+Coordinador -[#1d4ed8]-> UC_Firmas
+Coordinador -[#1d4ed8]-> UC_Modelo3D
+Coordinador -[#1d4ed8]-> UC_Agendar
+Coordinador -[#1d4ed8]-> UC_Finalizar
+Coordinador -[#1d4ed8]-> UC_Signos
+Coordinador -[#1d4ed8]-> UC_Nota
+
+' --- Junta: solo consulta / visualización (11 casos) ---
+Junta -[#475569]-> UC_Login
+Junta -[#475569]-> UC_Logout
+Junta -[#475569]-> UC_Inicio
+Junta -[#475569]-> UC_Listar
+Junta -[#475569]-> UC_Abrir
+Junta -[#475569]-> UC_Explorar
+Junta -[#475569]-> UC_ConsultarAp
+Junta -[#475569]-> UC_Calendario
+Junta -[#475569]-> UC_VerSignos
+Junta -[#475569]-> UC_VerNotas
+Junta -[#475569]-> UC_Demo
+
+UC_Listar ..> UC_Login : <<incluye>>
+UC_Crear ..> UC_Login : <<incluye>>
+UC_Crear ..> UC_Datos : <<incluye>>
+UC_Actualizar ..> UC_Sync : <<incluye>>
+UC_Agendar ..> UC_Listar : <<extiende>>
+UC_Signos ..> UC_Listar : <<extiende>>
+UC_Nota ..> UC_Listar : <<extiende>>
+UC_Finalizar ..> UC_Calendario : <<extiende>>
+UC_Modelo3D ..> UC_Abrir : <<extiende>>
+
+@enduml

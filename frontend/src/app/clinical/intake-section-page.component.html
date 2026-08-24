@@ -1,0 +1,348 @@
+<div class="lun-page" [formGroup]="form">
+    <header class="lun-page-hero">
+      <span class="lun-page-eyebrow">Apartado de la ficha</span>
+      <h1>{{ meta()?.label ?? 'Apartado' }}</h1>
+      @if (meta()?.introText; as intro) {
+        <div class="lun-intro">{{ intro }}</div>
+      }
+      <p>{{ meta()?.description ?? '' }}</p>
+      @if (pageMsg()) {
+        <p class="lun-page-msg">{{ pageMsg() }}</p>
+      }
+    </header>
+
+    @if (sectionId() === 'cuerpo-grafico') {
+      <section class="lun-surface body-graphic-page">
+        <div class="body-graphic-layout">
+          <aside class="body-graphic-panel" aria-label="Observaciones y acciones">
+            <div class="body-graphic-panel-inner">
+              @if (!editorOpen()) {
+                <button type="button" class="btn-gold btn-gold--block" (click)="openEditor()">
+                  {{ addLabel() }}
+                </button>
+              } @else {
+                <button type="button" class="btn-outline btn-gold--block" (click)="closeEditor()">
+                  Cancelar
+                </button>
+              }
+              @if (editorOpen()) {
+                <label class="clinical-field-box clinical-field-box--observaciones field-observaciones body-graphic-field">
+                  <span class="clinical-field-box-label">Observaciones</span>
+                  <textarea
+                    class="observaciones-wide clinical-field-control"
+                    formControlName="descripcionCuerpoObservaciones"
+                    rows="16"
+                  ></textarea>
+                </label>
+                <button type="button" class="btn-gold btn-gold--block" (click)="submitSection()">
+                  Enviar
+                </button>
+              } @else {
+                <p class="body-graphic-hint">
+                  Marque heridas o condiciones en el modelo. Use
+                  <strong>{{ addLabel() }}</strong> para las observaciones escritas.
+                </p>
+              }
+            </div>
+          </aside>
+          <div class="body-graphic-viewer">
+            <app-clinical-body-scratch [intakeKey]="store.currentId() ?? ''" />
+          </div>
+        </div>
+      </section>
+    } @else if (showAddPanel()) {
+      <section class="lun-surface lun-surface--editor">
+        <div class="lun-surface-bar">
+          @if (!editorOpen()) {
+            <button type="button" class="btn-gold" (click)="openEditor()">{{ addLabel() }}</button>
+          } @else {
+            <button type="button" class="btn-outline" (click)="closeEditor()">Cancelar</button>
+          }
+        </div>
+        @if (editorOpen()) {
+          <div class="lun-surface-body">
+        @switch (sectionId()) {
+          @case ('contrato') {
+            <label class="field-full"
+              >Número de contrato<input formControlName="contratoNumero"
+            /></label>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('personal') {
+            <div formGroupName="personal" class="personal-with-photo">
+              <div class="field-grid">
+                @for (f of personalFields; track f.key) {
+                  <label [class.field-full]="f.key === 'nombreApellidos'"
+                    >{{ f.label }}
+                    @if (f.type === 'date') {
+                      <input [type]="f.type" [formControlName]="f.key" />
+                    } @else if (f.key === 'sexo') {
+                      <select [formControlName]="f.key">
+                        <option value="">—</option>
+                        <option>Femenino</option>
+                        <option>Masculino</option>
+                      </select>
+                    } @else {
+                      <input [formControlName]="f.key" />
+                    }
+                  </label>
+                }
+              </div>
+              <div class="photo-attach-col">
+                <app-photo-attach
+                  formControlName="foto"
+                  header="Anexar foto"
+                  sizeHint="3,5 × 4,5 cm"
+                  hint="Anexar foto del adulto mayor"
+                />
+              </div>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('economica') {
+            <div formGroupName="economica" class="field-grid">
+              @for (f of economicaFields; track f.key) {
+                <label [class.field-full]="f.key === 'direccion' || f.key === 'ingresosDe'"
+                  >{{ f.label }}<input [formControlName]="f.key"
+                /></label>
+              }
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('familiar') {
+            <div formGroupName="familiar" class="field-grid">
+              @for (f of familiarFields; track f.key) {
+                <label class="field-full"
+                  >{{ f.label }}
+                  @if (f.area) {
+                    <textarea [formControlName]="f.key" rows="3"></textarea>
+                  } @else {
+                    <input [formControlName]="f.key" />
+                  }
+                </label>
+              }
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('hijos') {
+            <div class="field-grid">
+              <label>Nombre<input (input)="patchDraft('nombre', $any($event.target).value)" /></label>
+              <label>Contacto<input (input)="patchDraft('contacto', $any($event.target).value)" /></label>
+              <label>Correo<input (input)="patchDraft('email', $any($event.target).value)" /></label>
+            </div>
+            <button type="button" class="btn" (click)="saveDraftToArray('hijo')">Guardar hijo</button>
+          }
+          @case ('referencias') {
+            <p><strong>Nueva referencia personal</strong></p>
+            <div class="field-grid">
+              <label>Nombre<input (input)="patchDraft('nombre', $any($event.target).value)" /></label>
+              <label>Contacto<input (input)="patchDraft('contacto', $any($event.target).value)" /></label>
+              <label>Dirección<input (input)="patchDraft('direccion', $any($event.target).value)" /></label>
+              <label>Relación<input (input)="patchDraft('relacion', $any($event.target).value)" /></label>
+            </div>
+            <button type="button" class="btn-gold" (click)="saveDraftToArray('referencia')">
+              Enviar referencia
+            </button>
+            <hr />
+            <p><strong>Nuevo acudiente</strong></p>
+            <div class="field-grid">
+              <label>Nombre<input (input)="patchDraft('nombre', $any($event.target).value)" /></label>
+              <label>ID<input (input)="patchDraft('identificacion', $any($event.target).value)" /></label>
+              <label>Contacto<input (input)="patchDraft('contacto', $any($event.target).value)" /></label>
+              <label>Parentesco<input (input)="patchDraft('parentesco', $any($event.target).value)" /></label>
+            </div>
+            <button type="button" class="btn" (click)="saveDraftToArray('acudiente')">
+              Guardar acudiente
+            </button>
+          }
+          @case ('clinica') {
+            <div formGroupName="clinica">
+              <label class="field-full"
+                >Patología<textarea formControlName="patologia" rows="3"></textarea
+              ></label>
+              <div class="field-grid">
+                <label>Alergias medicamentos<textarea formControlName="alergiasMed"></textarea></label>
+                <label>Alimentos<textarea formControlName="alergiasAlim"></textarea></label>
+                <label>Otros<textarea formControlName="alergiasOtros"></textarea></label>
+              </div>
+            </div>
+            <p><strong>Medicamento</strong></p>
+            <div class="field-grid">
+              <label>Nombre<input (input)="patchDraft('nombre', $any($event.target).value)" /></label>
+              <label>Dosis<input (input)="patchDraft('dosis', $any($event.target).value)" /></label>
+              <label>Horarios<input (input)="patchDraft('horarios', $any($event.target).value)" /></label>
+            </div>
+            <div class="pdf-attach-col">
+              <app-pdf-attach
+                [ngModel]="draftVal('soporteFormulaPdf')"
+                (ngModelChange)="patchDraft('soporteFormulaPdf', $event)"
+                [fileName]="draftVal('soporteFormulaNombre')"
+                (fileNameChange)="patchDraft('soporteFormulaNombre', $event)"
+              />
+            </div>
+            <button type="button" class="btn" (click)="saveDraftToArray('medicamento')">
+              Agregar medicamento
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="closeEditor()">Cerrar</button>
+          }
+          @case ('medicamentos') {
+            <div formGroupName="clinica">
+              <div formArrayName="medicamentos" class="dynamic-rows">
+                @for (m of medicamentos.controls; track $index) {
+                  <div class="entry-card" [formGroupName]="$index">
+                    <div class="field-grid field-grid--row-3">
+                      <label>Nombre<input formControlName="nombre" /></label>
+                      <label>Dosis<input formControlName="dosis" /></label>
+                      <label>Horarios<input formControlName="horarios" /></label>
+                    </div>
+                    <div class="pdf-attach-col">
+                      <app-pdf-attach
+                        formControlName="soporteFormulaPdf"
+                        [fileName]="$any(m).get('soporteFormulaNombre')?.value"
+                        (fileNameChange)="$any(m).patchValue({ soporteFormulaNombre: $event })"
+                      />
+                    </div>
+                    @if ($index > 0) {
+                      <button
+                        type="button"
+                        class="link-remove"
+                        (click)="removeMedicamento($index)"
+                      >
+                        Quitar medicamento
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="section-action-row">
+              <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
+                + Agregar medicamento
+              </button>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('autopercepcion') {
+            <div formGroupName="autopercepcion" class="field-grid">
+              <label class="field-full"
+                >Considera que su estado de salud es:
+                <select formControlName="estadoSalud">
+                  <option value="">—</option>
+                  @for (o of saludOpts; track o) {
+                    <option [value]="o">{{ o }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field-full"
+                >Anamnesis aspecto<textarea formControlName="anamnesisAspecto"></textarea
+              ></label>
+              <label class="field-full"
+                >Emocional<textarea formControlName="anamnesisEmocional"></textarea
+              ></label>
+              <label class="field-full"
+                >Físico<textarea formControlName="anamnesisFisico"></textarea
+              ></label>
+              <label>Higiénico<input formControlName="higienico" /></label>
+              <label>Nutricional<input formControlName="nutricional" /></label>
+              <label>Movilidad<input formControlName="ayudaMovilizarse" /></label>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('riesgo') {
+            <p><strong>Especialista</strong></p>
+            <div class="field-grid">
+              <label>Especialidad<input (input)="patchDraft('especialidad', $any($event.target).value)" /></label>
+              <label>Frecuencia<input (input)="patchDraft('frecuencia', $any($event.target).value)" /></label>
+              <label>Tratamiento<input (input)="patchDraft('tratamiento', $any($event.target).value)" /></label>
+            </div>
+            <button type="button" class="btn" (click)="saveDraftToArray('especialista')">
+              Guardar especialista
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="closeEditor()">Cerrar</button>
+          }
+          @case ('examen') {
+            <div formGroupName="examenFisico" class="field-grid">
+              <label>Piel<textarea formControlName="piel" rows="3"></textarea></label>
+              <label>Tórax<textarea formControlName="torax" rows="3"></textarea></label>
+              <label>Abdomen<textarea formControlName="abdomen" rows="3"></textarea></label>
+              <label>Extremidades sup.<textarea formControlName="extSuperiores" rows="3"></textarea></label>
+              <label>Extremidades inf.<textarea formControlName="extInferiores" rows="3"></textarea></label>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('sistemas') {
+            <div formGroupName="revisionSistemas" class="field-grid">
+              <label>Respiratorio<textarea formControlName="respiratorio" rows="2"></textarea></label>
+              <label>Cardiovascular<textarea formControlName="cardiovascular" rows="2"></textarea></label>
+              <label>Neurológico<textarea formControlName="neurologico" rows="2"></textarea></label>
+              <label>Genitourinario<textarea formControlName="ginecologico" rows="2"></textarea></label>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('mental') {
+            <div formGroupName="examenMental" class="field-grid">
+              <label>Actitud<textarea formControlName="actitud" rows="2"></textarea></label>
+              <label>Memoria<textarea formControlName="memoria" rows="2"></textarea></label>
+              <label>Lenguaje<textarea formControlName="lenguaje" rows="2"></textarea></label>
+            </div>
+            <div formGroupName="antecedentes" class="field-grid">
+              <label>Patológicos<textarea formControlName="patologicos" rows="2"></textarea></label>
+              <label>Quirúrgicos<textarea formControlName="quirurgicos" rows="2"></textarea></label>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @case ('vitales') {
+            <div formGroupName="signosVitales" class="field-grid">
+              <label>TA<input formControlName="ta" /></label>
+              <label>FC<input formControlName="fc" /></label>
+              <label>FR<input formControlName="fr" /></label>
+              <label>SpO₂<input formControlName="spo2" /></label>
+              <label>Peso<input type="number" formControlName="peso" /></label>
+              <label>Talla<input type="number" formControlName="talla" /></label>
+            </div>
+            <button type="button" class="btn-gold" (click)="submitSection()">Enviar</button>
+          }
+          @case ('escalas') {
+            <app-intake-section-scales />
+            <button type="button" class="btn-gold" (click)="submitSection()">Enviar</button>
+          }
+          @case ('cierre') {
+            <div formGroupName="conceptoInstitucional" class="field-grid">
+              <label>Fecha<input type="date" formControlName="fecha" /></label>
+              <label
+                >Concepto
+                <select formControlName="favorable">
+                  <option value="">—</option>
+                  <option value="si">Favorable</option>
+                  <option value="no">No favorable</option>
+                </select>
+              </label>
+              <label class="field-full"
+                >Justificación<textarea formControlName="justificacion" rows="4"></textarea
+              ></label>
+            </div>
+            <button type="button" class="btn" (click)="submitSection()">Enviar</button>
+          }
+          @default {
+            <p class="info-box">Complete los campos y use Guardar para ver los datos abajo.</p>
+            <button type="button" class="btn-gold" (click)="closeEditor()">Listo</button>
+          }
+        }
+          </div>
+          <div class="lun-surface-foot">
+            @if (sectionId() === 'hijos') {
+              <button type="button" class="btn-gold" (click)="saveDraftToArray('hijo')">Guardar registro</button>
+            } @else if (sectionId() === 'referencias') {
+              <span class="info-box" style="margin:0;padding:0.5rem 0;border:none;background:transparent"
+                >Use los botones dentro del formulario para cada referencia o acudiente.</span
+              >
+            } @else if (sectionId() === 'clinica' || sectionId() === 'riesgo') {
+              <button type="button" class="btn-outline" (click)="closeEditor()">Cerrar formulario</button>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <app-section-records-dock [sectionId]="sectionId()" />
+  </div>

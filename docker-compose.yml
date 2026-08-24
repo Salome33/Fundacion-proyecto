@@ -1,0 +1,26 @@
+name: manos-unidas
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: manos-unidas-postgres
+    environment:
+      POSTGRES_DB: manos_unidas
+      POSTGRES_USER: manos
+      POSTGRES_PASSWORD: manos
+    ports:
+      - "5432:5432"
+    volumes:
+      - manos_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manos -d manos_unidas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  default:
+    name: manos-unidas-net
+
+volumes:
+  manos_pg_data:

@@ -1,0 +1,60 @@
+---
+title: Entidades — Fundación Manos Unidas (vista tablas)
+---
+erDiagram
+    FichaClinica ||--o{ CitaMedica : ficha_id
+    FichaClinica ||--o{ SignoVitalDiario : ficha_id
+    FichaClinica ||--o{ NotaEnfermeria : ficha_id
+    FichaClinica ||--|| FormularioClinico : data
+    FichaClinica }o..o| RegistroFichaServidor : sync
+
+    FichaClinica {
+        string id PK
+        string createdAt
+        string updatedAt
+        string nombre
+        string identificacion
+        json data
+    }
+
+    CitaMedica {
+        string id PK
+        string fichaId FK
+        string tipoCita
+        string fecha
+        string hora
+        string nombreMedico
+        boolean finalizada
+    }
+
+    SignoVitalDiario {
+        string id PK
+        string fichaId FK
+        string fecha
+        string turno
+        string ta
+        string fc
+        string fr
+        string spo2
+    }
+
+    NotaEnfermeria {
+        string id PK
+        string fichaId FK
+        string fecha
+        string hora
+        string detalle
+    }
+
+    SesionAuth {
+        string username
+        string role
+        string displayName
+    }
+
+    RegistroFichaServidor {
+        string id PK
+        instant guardadoEn
+        map datos
+        string fichaId FK
+    }

@@ -1,0 +1,25 @@
+# Dependencias y compilados
+node_modules/
+frontend/dist/
+frontend/.angular/
+backend/target/
+
+# Entorno e IDE
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# CRUD administrativo (no incluir en el repositorio)
+frontend/src/app/crud-admin/
+scripts/start-crud-admin.cmd
+backend/src/main/java/com/humanscratch/api/CrudAdminController.java
+backend/src/main/java/com/humanscratch/service/CrudAdminService.java
