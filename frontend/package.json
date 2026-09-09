@@ -5,7 +5,7 @@
   "scripts": {
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build --configuration production",
-    "build:spring": "ng build --configuration production --output-path=../backend/src/main/resources/static"
+    "build:spring": "ng build --configuration production --output-path=../backend/src/main/resources/static-build && node scripts/copy-spring-static.mjs"
   },
   "dependencies": {
     "@angular/common": "^19.2.0",
