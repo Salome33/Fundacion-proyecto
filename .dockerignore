@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.angular
+**/target
+**/.git
+**/.cursor
+**/terminals
+**/*.md
+scripts/
+docker-compose.yml

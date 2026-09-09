@@ -1,0 +1,40 @@
+# Blueprint Render — Historia Clínica Manos Unidas
+# Dashboard Render → New → Blueprint → conectar repo de GitHub
+
+services:
+  - type: web
+    name: manos-unidas-app
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_CORS_ORIGINS
+        sync: false
+      - key: DB_HOST
+        fromDatabase:
+          name: manos-unidas-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: manos-unidas-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: manos-unidas-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: manos-unidas-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: manos-unidas-db
+          property: password
+
+databases:
+  - name: manos-unidas-db
+    plan: free
+    region: oregon
+    databaseName: manos_unidas
+    user: manos
