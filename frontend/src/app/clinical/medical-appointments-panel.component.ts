@@ -50,7 +50,7 @@ interface CalendarDay {
                 </p>
               </div>
               @if (auth.canEdit()) {
-                <button type="button" class="btn btn-secondary btn-gold--xl" (click)="addDialogOpen.set(true)">
+                <button type="button" class="btn btn-secondary btn-gold--xl" (click)="openAddDialog()">
                   + Agendar cita médica
                 </button>
               }
@@ -161,6 +161,7 @@ interface CalendarDay {
                 [class.gcal-day--muted]="!cell.inMonth"
                 [class.gcal-day--today]="cell.isToday"
                 [class.gcal-day--selected]="selectedDate() === cell.date"
+                [class.gcal-day--has-events]="appointmentsForDate(cell.date).length > 0"
                 (click)="pickDate(cell)"
                 (keydown.enter)="pickDate(cell)"
                 [attr.tabindex]="cell.inMonth ? 0 : -1"
@@ -168,21 +169,33 @@ interface CalendarDay {
               >
                 @if (cell.inMonth) {
                   <span class="gcal-day-num">{{ cell.day }}</span>
+                  <div class="gcal-day-events">
+                    @for (cita of appointmentsForDate(cell.date).slice(0, 3); track cita.id) {
+                      <div class="gcal-event">
+                        <span class="gcal-event-time">{{ cita.hora || '—' }}</span>
+                        <span class="gcal-event-title">{{ cita.patientNombre }}</span>
+                      </div>
+                    }
+                    @if (appointmentsForDate(cell.date).length > 3) {
+                      <span class="gcal-more">+{{ appointmentsForDate(cell.date).length - 3 }} más</span>
+                    }
+                  </div>
                 }
               </div>
             }
           </div>
           </div>
 
-          @if (todayAppointments().length > 0) {
-            <section class="clinical-section-card med-appt-today-block">
-              <h3 class="appointments-subtitle">Citas de hoy · {{ formatDate(todayIso()) }}</h3>
-              <p class="panel-lead med-appt-today-lead">
-                Citas programadas para el día actual. Use el filtro para consultar otras fechas en el
-                historial.
-              </p>
+          <section class="clinical-section-card med-appt-today-block">
+            <h3 class="appointments-subtitle">Citas del {{ formatDate(selectedDate()) }}</h3>
+            <p class="panel-lead med-appt-today-lead">
+              Citas activas programadas para el día seleccionado en el calendario.
+            </p>
+            @if (selectedDateAppointments().length === 0) {
+              <p class="appointments-empty">No hay citas programadas para esta fecha.</p>
+            } @else {
               <ul class="appointments-list med-appt-today-list">
-                @for (cita of todayAppointments(); track cita.id) {
+                @for (cita of selectedDateAppointments(); track cita.id) {
                   <li
                     class="appointments-list-item"
                     [class.med-appt-list-item--pending]="isPastDue(cita)"
@@ -215,8 +228,8 @@ interface CalendarDay {
                   </li>
                 }
               </ul>
-            </section>
-          }
+            }
+          </section>
 
           @if (addDialogOpen()) {
             <app-clinical-dialog title="Agendar cita médica" size="lg" (closed)="closeAddDialog()">
@@ -253,11 +266,23 @@ interface CalendarDay {
                 </label>
                 <label
                   >Fecha
-                  <input [(ngModel)]="formFecha" name="formFecha" type="date" required />
+                  <input
+                    [(ngModel)]="formFecha"
+                    name="formFecha"
+                    type="date"
+                    class="input-datetime-hint"
+                    required
+                  />
                 </label>
                 <label
                   >Hora
-                  <input [(ngModel)]="formHora" name="formHora" type="time" required />
+                  <input
+                    [(ngModel)]="formHora"
+                    name="formHora"
+                    type="time"
+                    class="input-datetime-hint"
+                    required
+                  />
                 </label>
                 <label class="field-full"
                   >Nombre del médico
@@ -305,19 +330,20 @@ export class MedicalAppointmentsPanelComponent {
   formNombre = '';
   formIdentificacion = '';
   formTipoCita = '';
-  formFecha = this.todayIso();
-  formHora = '09:00';
+  formFecha = '';
+  formHora = '';
   formMedico = '';
 
   bookError = signal('');
   saveMsg = signal('');
 
-  readonly todayAppointments = computed(() => {
+  readonly selectedDateAppointments = computed(() => {
     this.appointmentsApi.appointments();
     this.filterNombre();
     this.filterDocumento();
-    const today = this.todayIso();
-    let list = this.appointmentsApi.activeSorted().filter((a) => a.fecha === today);
+    this.selectedDate();
+    const date = this.selectedDate();
+    let list = this.appointmentsApi.activeSorted().filter((a) => a.fecha === date);
     if (this.filterActive()) {
       list = this.applyPatientFilter(list);
     }
@@ -389,6 +415,7 @@ export class MedicalAppointmentsPanelComponent {
   );
 
   readonly calendarDays = computed((): CalendarDay[] => {
+    this.appointmentsApi.appointments();
     const month = this.viewMonth();
     const year = month.getFullYear();
     const monthIndex = month.getMonth();
@@ -451,6 +478,15 @@ export class MedicalAppointmentsPanelComponent {
     this.showHistorial.set(false);
   }
 
+  openAddDialog(): void {
+    this.formFecha = '';
+    this.formHora = '';
+    this.formTipoCita = '';
+    this.formMedico = '';
+    this.bookError.set('');
+    this.addDialogOpen.set(true);
+  }
+
   closeAddDialog(): void {
     this.addDialogOpen.set(false);
     this.bookError.set('');
@@ -465,7 +501,13 @@ export class MedicalAppointmentsPanelComponent {
       this.viewMonth.set(new Date(y, m - 1, 1));
     }
     this.selectedDate.set(cell.date);
-    this.formFecha = cell.date;
+  }
+
+  appointmentsForDate(date: string): MedicalAppointment[] {
+    return this.appointmentsApi
+      .activeSorted()
+      .filter((a) => a.fecha === date)
+      .sort((a, b) => (a.hora ?? '').localeCompare(b.hora ?? ''));
   }
 
   prevMonth(): void {
@@ -481,9 +523,7 @@ export class MedicalAppointmentsPanelComponent {
   goToday(): void {
     const now = new Date();
     this.viewMonth.set(this.startOfMonth(now));
-    const iso = this.todayIso();
-    this.selectedDate.set(iso);
-    this.formFecha = iso;
+    this.selectedDate.set(this.todayIso());
   }
 
   saveAppointment(): void {
@@ -519,6 +559,7 @@ export class MedicalAppointmentsPanelComponent {
 
         this.formTipoCita = '';
         this.formMedico = '';
+        this.formHora = '';
         this.formNombre = saved.patientNombre;
         this.formIdentificacion = saved.patientIdentificacion;
         this.filterNombre.set('');
@@ -528,7 +569,7 @@ export class MedicalAppointmentsPanelComponent {
         const [y, m] = fecha.split('-').map(Number);
         this.viewMonth.set(new Date(y, m - 1, 1));
         this.selectedDate.set(fecha);
-        this.formFecha = fecha;
+        this.formFecha = '';
 
         this.addDialogOpen.set(false);
         setTimeout(() => this.saveMsg.set(''), 3000);

@@ -5,6 +5,10 @@ cd /d "%~dp0.."
 call "%~dp0start-postgres.cmd"
 if errorlevel 1 exit /b 1
 
+echo.
+echo Liberando puerto 8080 si quedo un backend anterior...
+call "%~dp0stop-backend.cmd"
+
 cd /d "%~dp0..\backend"
 
 if not exist "target\human-scratch-three-1.0.0.jar" (
@@ -13,7 +17,7 @@ if not exist "target\human-scratch-three-1.0.0.jar" (
 )
 
 echo Backend http://localhost:8080 (Java 21 en Docker)
-docker run --rm -p 8080:8080 ^
+docker run --rm -it --name manos-unidas-backend -p 8080:8080 ^
   --network manos-unidas-net ^
   -e DB_HOST=postgres ^
   -e DB_PORT=5432 ^

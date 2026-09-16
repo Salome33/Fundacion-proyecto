@@ -40,7 +40,7 @@ import { ClinicalDialogComponent } from './clinical-dialog.component';
                 </p>
               </div>
               @if (auth.canEdit()) {
-                <button type="button" class="btn btn-secondary btn-gold--xl" (click)="addDialogOpen.set(true)">
+                <button type="button" class="btn btn-secondary btn-gold--xl" (click)="openAddDialog()">
                   + Registrar nota de enfermería
                 </button>
               }
@@ -150,11 +150,23 @@ import { ClinicalDialogComponent } from './clinical-dialog.component';
                 </label>
                 <label class="vitals-date-label">
                   Fecha
-                  <input [(ngModel)]="formFecha" name="formFecha" type="date" required />
+                  <input
+                    [(ngModel)]="formFecha"
+                    name="formFecha"
+                    type="date"
+                    class="input-datetime-hint"
+                    required
+                  />
                 </label>
                 <label class="vitals-date-label">
                   Hora
-                  <input [(ngModel)]="formHora" name="formHora" type="time" required />
+                  <input
+                    [(ngModel)]="formHora"
+                    name="formHora"
+                    type="time"
+                    class="input-datetime-hint"
+                    required
+                  />
                 </label>
                 <label class="field-full med-appt-filter-field">
                   Detalle
@@ -198,8 +210,8 @@ export class NursingNotesPanelComponent {
 
   formNombre = '';
   formDocumento = '';
-  formFecha = this.todayIso();
-  formHora = this.nowTime();
+  formFecha = '';
+  formHora = '';
   formDetalle = '';
 
   formError = signal('');
@@ -231,6 +243,14 @@ export class NursingNotesPanelComponent {
   clearFilter(): void {
     this.filterNombre = '';
     this.filterDocumento = '';
+  }
+
+  openAddDialog(): void {
+    this.formFecha = '';
+    this.formHora = '';
+    this.formDetalle = '';
+    this.formError.set('');
+    this.addDialogOpen.set(true);
   }
 
   closeAddDialog(): void {
@@ -280,16 +300,6 @@ export class NursingNotesPanelComponent {
 
   removeNote(id: string): void {
     this.notesApi.removeNote(id);
-  }
-
-  private todayIso(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  private nowTime(): string {
-    const d = new Date();
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
   private displayDateFromInput(iso: string): string {

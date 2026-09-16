@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { MAIN_NAV_ITEMS } from './clinical-nav.config';
+import { ClinicalSidebarService } from './clinical-sidebar.service';
 import { FUNDACION_CONTACT } from './fundacion-contact.config';
 
 @Component({
@@ -12,6 +13,14 @@ import { FUNDACION_CONTACT } from './fundacion-contact.config';
   template: `
     <aside class="lun-sidebar clinical-main-nav">
       <div class="lun-brand">
+        <button
+          type="button"
+          class="clinical-sidebar-close"
+          aria-label="Cerrar menú"
+          (click)="sidebar.close()"
+        >
+          ×
+        </button>
         <div class="lun-brand-logo">
           <img src="assets/fundacion/logo-emblem.png" alt="Fundación Manos Unidas de Dios" />
         </div>
@@ -28,6 +37,7 @@ import { FUNDACION_CONTACT } from './fundacion-contact.config';
             routerLinkActive="lun-nav-item--active"
             [routerLinkActiveOptions]="{ exact: item.path === '/' }"
             [title]="item.description"
+            (click)="sidebar.close()"
           >
             <span class="lun-nav-icon lun-nav-icon--menu" aria-hidden="true"></span>
             <span>{{ item.label }}</span>
@@ -68,6 +78,7 @@ import { FUNDACION_CONTACT } from './fundacion-contact.config';
 })
 export class ClinicalMainNavComponent {
   readonly auth = inject(AuthService);
+  readonly sidebar = inject(ClinicalSidebarService);
   private router = inject(Router);
 
   readonly navItems = MAIN_NAV_ITEMS;

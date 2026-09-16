@@ -10,6 +10,7 @@ import {
 import { filter } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { intakeNavGroups, sectionByPath } from './clinical-sections';
+import { ClinicalSidebarService } from './clinical-sidebar.service';
 import { IntakeStoreService } from './intake-store.service';
 
 @Component({
@@ -18,9 +19,39 @@ import { IntakeStoreService } from './intake-store.service';
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   styleUrl: './clinical-theme.css',
   template: `
-    <div class="lun-shell">
-      <aside class="lun-sidebar">
+    <div
+      class="lun-shell intake-scroll-shell"
+      [class.clinical-sidebar-open]="sidebar.open()"
+    >
+      @if (!sidebar.open()) {
+        <button
+          type="button"
+          class="clinical-sidebar-toggle"
+          (click)="sidebar.openPanel()"
+          aria-expanded="false"
+          aria-controls="intake-layout-nav"
+        >
+          Menú
+        </button>
+      }
+      @if (sidebar.open()) {
+        <button
+          type="button"
+          class="clinical-sidebar-backdrop"
+          aria-label="Cerrar menú"
+          (click)="sidebar.close()"
+        ></button>
+      }
+      <aside class="lun-sidebar lun-sidebar--scroll-index" id="intake-layout-nav">
         <div class="lun-brand">
+          <button
+            type="button"
+            class="clinical-sidebar-close"
+            aria-label="Cerrar menú"
+            (click)="sidebar.close()"
+          >
+            ×
+          </button>
           <div class="lun-brand-logo">
             <img src="assets/fundacion/logo-emblem.png" alt="Fundación Manos Unidas de Dios" />
           </div>
@@ -28,7 +59,7 @@ import { IntakeStoreService } from './intake-store.service';
           <p class="lun-brand-sub">Valoración clínica</p>
         </div>
 
-        <nav class="lun-sidebar-nav">
+        <nav class="lun-sidebar-nav clinical-intake-index-list" aria-label="Apartados de la ficha">
           @for (group of navGroups; track group.title) {
             <p class="lun-nav-heading">{{ group.title }}</p>
             @for (item of group.items; track item.path) {
@@ -37,6 +68,7 @@ import { IntakeStoreService } from './intake-store.service';
                 [routerLink]="['/ingreso', intakeId, item.path]"
                 routerLinkActive="lun-nav-item--active"
                 [routerLinkActiveOptions]="{ exact: true }"
+                (click)="sidebar.close()"
               >
                 <span class="lun-nav-icon" aria-hidden="true">{{ navIcon(item.path) }}</span>
                 <span>{{ item.label }}</span>
@@ -72,7 +104,7 @@ import { IntakeStoreService } from './intake-store.service';
         </div>
       </aside>
 
-      <main class="lun-main">
+      <main class="clinical-page intake-scroll-main lun-main">
         @if (msg()) {
           <p class="lun-toast">{{ msg() }}</p>
         }
@@ -89,6 +121,7 @@ export class IntakeLayoutComponent implements OnInit {
   private router = inject(Router);
   private auth = inject(AuthService);
   readonly store = inject(IntakeStoreService);
+  readonly sidebar = inject(ClinicalSidebarService);
   readonly navGroups = intakeNavGroups();
   msg = signal('');
   intakeId = '';
@@ -153,8 +186,10 @@ export class IntakeLayoutComponent implements OnInit {
         setTimeout(() => this.msg.set(''), 3500);
       },
       error: () => {
-        this.msg.set('Ficha guardada localmente. No se pudo sincronizar con el servidor.');
-        setTimeout(() => this.msg.set(''), 3500);
+        this.msg.set(
+          'No se pudo guardar en el servidor. Verifique que PostgreSQL y el backend estén en ejecución.',
+        );
+        setTimeout(() => this.msg.set(''), 5000);
       },
     });
   }

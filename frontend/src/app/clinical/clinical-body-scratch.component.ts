@@ -11,7 +11,6 @@ import {
   ViewChild,
   signal,
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { ClinicalFormService } from './clinical-form.service';
 import { IntakeStoreService } from './intake-store.service';
@@ -46,7 +45,7 @@ import { ScratchSceneService, ScratchTool } from '../scratch/scratch-scene.servi
           </p>
           @if (loadState() === 'loading') {
             <span class="body-scratch-status">Cargando modelo…</span>
-          } @else if (loadState() === 'error') {
+          } @else if (loadState() === 'error' && !modelLoaded()) {
             <span class="body-scratch-status body-scratch-status--err">No se pudo cargar el modelo.</span>
           }
         </div>
@@ -69,6 +68,16 @@ import { ScratchSceneService, ScratchTool } from '../scratch/scratch-scene.servi
               >
                 Borrador
               </button>
+              @if (touchLayout()) {
+                <button
+                  type="button"
+                  class="btn btn-secondary body-scratch-tool"
+                  [class.body-scratch-tool--active]="activeTool() === 'rotate'"
+                  (click)="setTool('rotate')"
+                >
+                  Rotar
+                </button>
+              }
             </div>
           </div>
         }
@@ -76,10 +85,26 @@ import { ScratchSceneService, ScratchTool } from '../scratch/scratch-scene.servi
       <div
         #host
         class="body-scratch-viewport"
-        [class.body-scratch-viewport--erase]="activeTool() === 'erase' && markEditable() && auth.canEdit()"
+        [class.body-scratch-viewport--erase]="
+          activeTool() === 'erase' && markEditable() && auth.canEdit()
+        "
       ></div>
       <p class="body-scratch-hint">
-        @if (auth.canEdit() && markEditable()) {
+        @if (touchLayout()) {
+          @if (auth.canEdit() && markEditable()) {
+            @if (activeTool() === 'rotate') {
+              Un dedo: rotar el modelo · Pulse «Marcar» o «Borrador» para editar las marcas.
+            } @else if (activeTool() === 'erase') {
+              Un dedo: borrar marcas · Pulse «Rotar» para girar el modelo con un dedo.
+            } @else {
+              Un dedo: marcar · Pulse «Rotar» para girar el modelo con un dedo.
+            }
+          } @else if (auth.canEdit()) {
+            Un dedo: rotar · Pulse «Editar» para marcar o borrar sobre el modelo.
+          } @else {
+            Un dedo: rotar · Visualización de las áreas marcadas del adulto mayor.
+          }
+        } @else if (auth.canEdit() && markEditable()) {
           @if (activeTool() === 'erase') {
             Clic izquierdo + arrastrar: borrar marcas · Clic derecho: rotar · Pulse «Actualizar» para
             guardar los cambios.
@@ -88,9 +113,9 @@ import { ScratchSceneService, ScratchTool } from '../scratch/scratch-scene.servi
             puntuales y «Actualizar» para guardar.
           }
         } @else if (auth.canEdit()) {
-          Pulse «Editar» para marcar o borrar sobre el modelo.
+          Clic izquierdo o derecho: rotar · Pulse «Editar» para marcar o borrar sobre el modelo.
         } @else {
-          Clic derecho: rotar · Visualización de las áreas marcadas del adulto mayor.
+          Clic izquierdo o derecho: rotar · Visualización de las áreas marcadas del adulto mayor.
         }
       </p>
     </div>
@@ -199,6 +224,11 @@ import { ScratchSceneService, ScratchTool } from '../scratch/scratch-scene.servi
         background: #2a2638;
       }
 
+      :host-context(.body-graphic-layout--modal) .body-scratch-viewport {
+        height: min(52vh, 480px);
+        min-height: 300px;
+      }
+
       .body-scratch-viewport canvas {
         position: absolute;
         inset: 0;
@@ -229,6 +259,7 @@ export class ClinicalBodyScratchComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.currentKey = next;
+    this.loadedPaintKey = '';
     if (this.sceneReady && this.scene.hasModel()) {
       this.reloadFromSaved();
       requestAnimationFrame(() => this.scene.resizeToHost());
@@ -239,7 +270,6 @@ export class ClinicalBodyScratchComponent implements AfterViewInit, OnDestroy {
   readonly markEditable = input(true);
 
   private scene = inject(ScratchSceneService);
-  private http = inject(HttpClient);
   private formApi = inject(ClinicalFormService);
   private store = inject(IntakeStoreService);
   private cdr = inject(ChangeDetectorRef);
@@ -247,10 +277,30 @@ export class ClinicalBodyScratchComponent implements AfterViewInit, OnDestroy {
 
   activeTool = signal<ScratchTool>('paint');
   loadState = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  touchLayout = signal(false);
   private resizeObs: ResizeObserver | null = null;
+  private touchLayoutMq: MediaQueryList | null = null;
+  private readonly onTouchLayoutChange = (): void => {
+    this.touchLayout.set(this.touchLayoutMq?.matches ?? false);
+    if (this.booted) {
+      this.syncInteractionMode();
+    }
+  };
   private sceneReady = false;
   private booted = false;
   private currentKey = '';
+  private alive = true;
+  private modelRequested = false;
+  private bootAttempts = 0;
+  private bootRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  private modelWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
+  private visibilityObs: IntersectionObserver | null = null;
+  private loadedPaintKey = '';
+  private viewportVisible = false;
+
+  modelLoaded(): boolean {
+    return this.scene.hasModel();
+  }
 
   personLabel(): string {
     return this.store.currentRecord()?.nombre?.trim() ?? '';
@@ -259,6 +309,7 @@ export class ClinicalBodyScratchComponent implements AfterViewInit, OnDestroy {
   constructor() {
     effect(() => {
       this.markEditable();
+      this.activeTool();
       if (this.booted) {
         this.syncInteractionMode();
       }
@@ -266,88 +317,292 @@ export class ClinicalBodyScratchComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.bootScene(this.hostRef.nativeElement);
+    if (typeof window !== 'undefined') {
+      this.touchLayoutMq = window.matchMedia('(max-width: 768px), (pointer: coarse)');
+      this.touchLayout.set(this.touchLayoutMq.matches);
+      this.touchLayoutMq.addEventListener('change', this.onTouchLayoutChange);
+      if (this.touchLayout() && this.markEditable() && this.auth.canEdit()) {
+        this.activeTool.set('rotate');
+      }
+    }
+    this.watchViewportVisibility(this.hostRef.nativeElement);
+  }
+
+  /** Solo inicia WebGL cuando el visor entra en pantalla (evita OOM en fichas largas). */
+  private watchViewportVisibility(host: HTMLElement): void {
+    if (typeof IntersectionObserver === 'undefined') {
+      this.deferBootUntilSized(host);
+      return;
+    }
+    this.visibilityObs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.some((entry) => entry.isIntersecting);
+        this.viewportVisible = visible;
+        this.scene.setViewportActive(visible);
+        if (!visible || !this.alive) {
+          return;
+        }
+        if (!this.booted) {
+          this.deferBootUntilSized(host);
+          return;
+        }
+        if (this.scene.isReady()) {
+          requestAnimationFrame(() => this.scene.refreshViewport());
+        }
+      },
+      { root: null, rootMargin: '64px 0px', threshold: 0.05 },
+    );
+    this.visibilityObs.observe(host);
+  }
+
+  private deferBootUntilSized(host: HTMLElement, attempt = 0): void {
+    if (!this.alive || this.booted || !this.viewportVisible) {
+      return;
+    }
+    const ready = host.clientWidth >= 80 && host.clientHeight >= 80;
+    if (ready || attempt >= 24) {
+      this.bootScene(host);
+      return;
+    }
+    requestAnimationFrame(() => this.deferBootUntilSized(host, attempt + 1));
   }
 
   /** Persiste las marcas del lienzo en el formulario (llamar al pulsar Actualizar/Guardar). */
-  commitDraftToForm(): void {
+  async commitDraftToForm(): Promise<void> {
     if (!this.auth.canEdit() || !this.scene.isReady()) {
       return;
     }
-    this.formApi.form.patchValue({ bodyPaintImage: this.scene.getPaintDataUrl() });
+    this.formApi.form.patchValue({
+      bodyPaintImage: this.scene.getPaintDataUrl(),
+    });
+    const snapshots = await this.capturePrintSnapshotsAsync();
+    if (snapshots.front && snapshots.back) {
+      this.formApi.form.patchValue({
+        bodyPrintFrontImage: snapshots.front,
+        bodyPrintBackImage: snapshots.back,
+      });
+    }
+  }
+
+  /** Espera a que el modelo 3D y las marcas estén listos para capturar. */
+  whenSceneReady(timeoutMs = 35000): Promise<boolean> {
+    const started = Date.now();
+    return new Promise((resolve) => {
+      const tick = (): void => {
+        if (this.loadState() === 'ready' && this.scene.isReady() && this.scene.hasModel()) {
+          resolve(true);
+          return;
+        }
+        if (this.loadState() === 'error' || Date.now() - started > timeoutMs) {
+          resolve(false);
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      tick();
+    });
+  }
+
+  /** Genera vistas frontal/posterior para impresión si el modelo ya está cargado. */
+  async capturePrintSnapshotsAsync(): Promise<{ front: string; back: string }> {
+    if (!this.scene.isReady() || !this.scene.hasModel()) {
+      return { front: '', back: '' };
+    }
+    await this.scene.whenPaintReady();
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    return this.scene.capturePrintSnapshots();
+  }
+
+  capturePrintSnapshots(): { front: string; back: string } {
+    if (!this.scene.isReady() || !this.scene.hasModel()) {
+      return { front: '', back: '' };
+    }
+    return this.scene.capturePrintSnapshots();
   }
 
   /** Restaura el lienzo desde los datos guardados en la ficha. */
   reloadFromSaved(): void {
-    if (!this.scene.isReady()) {
+    if (!this.scene.isReady() || this.scene.isFallbackModel()) {
       return;
     }
-    const saved = this.formApi.form.get('bodyPaintImage')?.value as string;
-    this.scene.loadPaintDataUrl(saved || '');
-    this.activeTool.set('paint');
-    this.scene.setTool('paint');
+    const saved = (this.formApi.form.get('bodyPaintImage')?.value as string) || '';
+    if (saved === this.loadedPaintKey) {
+      return;
+    }
+    this.loadedPaintKey = saved;
+    this.scene.loadPaintDataUrl(saved);
+    if (this.touchLayout() && this.markEditable() && this.auth.canEdit()) {
+      if (this.activeTool() !== 'erase') {
+        this.activeTool.set('rotate');
+      }
+    } else {
+      this.activeTool.set('paint');
+    }
+    this.syncInteractionMode();
   }
 
   persistPaint(): void {
     this.commitDraftToForm();
   }
 
+  /** Tras montar en modal o cambiar tamaño del contenedor. */
+  refreshLayout(): void {
+    if (!this.alive) {
+      return;
+    }
+    const host = this.hostRef?.nativeElement;
+    if (!host) {
+      return;
+    }
+    if (!this.booted) {
+      this.viewportVisible = true;
+      this.scene.setViewportActive(true);
+      this.deferBootUntilSized(host);
+      return;
+    }
+    if (!this.scene.isReady()) {
+      return;
+    }
+    requestAnimationFrame(() => this.scene.refreshViewport());
+  }
+
   setTool(tool: ScratchTool): void {
     if (!this.auth.canEdit() || !this.markEditable()) {
       return;
     }
+    if (tool === 'rotate' && !this.touchLayout()) {
+      return;
+    }
     this.activeTool.set(tool);
-    this.scene.setTool(tool);
+    this.syncInteractionMode();
   }
 
   private loadHumanModel(): void {
-    this.http.get('assets/models/human.obj', { responseType: 'text' }).subscribe({
-      next: (text) => {
-        if (text.includes('v ') && text.length > 100) {
+    if (!this.alive) {
+      return;
+    }
+    if (this.scene.hasModel() && !this.scene.isFallbackModel()) {
+      this.markModelReady();
+      return;
+    }
+    if (this.modelRequested && this.scene.isModelLoadPending()) {
+      return;
+    }
+    if (this.modelRequested && this.scene.hasModel()) {
+      return;
+    }
+    if (!this.scene.beginModelLoad()) {
+      return;
+    }
+    this.modelRequested = true;
+    this.tryLoadModelFromPaths(
+      ['/assets/models/human.obj', 'assets/models/human.obj', '/api/model/human.obj'],
+      0,
+    );
+  }
+
+  private tryLoadModelFromPaths(paths: string[], index: number): void {
+    if (index >= paths.length) {
+      this.scene.loadFallbackBody();
+      return;
+    }
+    fetch(paths[index])
+      .then((res) => (res.ok ? res.text() : Promise.reject(new Error(String(res.status)))))
+      .then((text) => {
+        if (!this.alive) {
+          return;
+        }
+        if (/(^|\n)v /m.test(text) && text.length > 500) {
           this.scene.loadObjFromText(text);
         } else {
-          this.scene.loadFallbackBody();
+          this.tryLoadModelFromPaths(paths, index + 1);
         }
-      },
-      error: () => {
-        this.http.get('/api/model/human.obj', { responseType: 'text' }).subscribe({
-          next: (text) => this.scene.loadObjFromText(text),
-          error: () => this.scene.loadFallbackBody(),
-        });
-      },
-    });
+      })
+      .catch(() => {
+        if (this.alive) {
+          this.tryLoadModelFromPaths(paths, index + 1);
+        }
+      });
   }
 
   private bootScene(host: HTMLElement): void {
-    if (this.booted) {
+    if (!this.alive || this.booted) {
       return;
     }
-    this.booted = true;
     this.loadState.set('loading');
-    try {
-      this.scene.onModelReady = () => {
-        this.reloadFromSaved();
-        this.scene.resizeToHost();
-        this.loadState.set('ready');
-        this.cdr.markForCheck();
-      };
-      this.scene.onModelError = () => {
-        this.loadState.set('ready');
-        this.cdr.markForCheck();
-      };
-      this.scene.init({ canvasHost: host });
-      this.syncInteractionMode();
-      this.sceneReady = true;
-      this.watchResize(host);
-      requestAnimationFrame(() => this.scene.resizeToHost());
-      void this.loadHumanModel();
-    } catch {
-      this.loadState.set('error');
-      this.booted = false;
+    if (!this.scene.init({ canvasHost: host })) {
+      console.error('No se pudo inicializar el visor 3D');
+      this.scheduleBootRetry(host);
+      return;
     }
+    this.scene.onModelReady = () => this.markModelReady();
+    this.booted = true;
+    this.syncInteractionMode();
+    this.sceneReady = true;
+    this.watchResize(host);
+    this.loadHumanModel();
+    this.scheduleModelWatchdog();
+  }
+
+  private markModelReady(): void {
+    if (!this.alive) {
+      return;
+    }
+    this.reloadFromSaved();
+    this.scene.refreshViewport();
+    this.loadState.set('ready');
+    this.cdr.markForCheck();
+  }
+
+  private scheduleBootRetry(host: HTMLElement): void {
+    const maxAttempts = this.touchLayout() ? 1 : 2;
+    if (!this.alive || this.booted || this.bootAttempts >= maxAttempts) {
+      if (!this.booted) {
+        this.loadState.set('error');
+      }
+      return;
+    }
+    this.bootAttempts++;
+    this.bootRetryTimer = setTimeout(() => {
+      if (this.alive && !this.booted) {
+        this.deferBootUntilSized(host);
+      }
+    }, 300);
+  }
+
+  private scheduleModelWatchdog(): void {
+    if (this.modelWatchdogTimer) {
+      clearTimeout(this.modelWatchdogTimer);
+    }
+    this.modelWatchdogTimer = setTimeout(() => {
+      if (!this.alive || !this.booted) {
+        return;
+      }
+      if (!this.scene.hasModel() && !this.scene.isModelLoadPending()) {
+        this.scene.loadFallbackBody();
+      }
+      if (
+        this.scene.hasModel() &&
+        !this.scene.isFallbackModel() &&
+        this.loadState() !== 'ready'
+      ) {
+        this.markModelReady();
+      }
+    }, 4000);
   }
 
   ngOnDestroy(): void {
+    this.alive = false;
+    if (this.bootRetryTimer) {
+      clearTimeout(this.bootRetryTimer);
+    }
+    if (this.modelWatchdogTimer) {
+      clearTimeout(this.modelWatchdogTimer);
+    }
+    this.touchLayoutMq?.removeEventListener('change', this.onTouchLayoutChange);
+    this.visibilityObs?.disconnect();
     this.resizeObs?.disconnect();
     const host = this.hostRef?.nativeElement;
     if (host) {
@@ -369,13 +624,20 @@ export class ClinicalBodyScratchComponent implements AfterViewInit, OnDestroy {
 
   private syncInteractionMode(): void {
     const canMark = this.auth.canEdit() && this.markEditable();
-    this.scene.setPaintEnabled(canMark);
-    if (canMark) {
-      this.scene.setTool(this.activeTool());
-    } else {
-      this.activeTool.set('paint');
-      this.scene.setTool('paint');
-      this.reloadFromSaved();
+    const rotateMode = canMark && this.touchLayout() && this.activeTool() === 'rotate';
+    this.scene.setPaintEnabled(canMark && !rotateMode);
+    if (!canMark) {
+      if (this.activeTool() !== 'paint') {
+        this.activeTool.set('paint');
+      }
+      return;
+    }
+    if (rotateMode) {
+      return;
+    }
+    const tool = this.activeTool();
+    if (tool === 'paint' || tool === 'erase') {
+      this.scene.setTool(tool);
     }
   }
 }

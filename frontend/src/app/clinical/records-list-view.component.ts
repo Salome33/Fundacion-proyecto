@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { IntakeRecord, IntakeStoreService } from './intake-store.service';
 
@@ -28,12 +28,18 @@ type SortMode = 'recent' | 'oldest' | 'alpha';
             <p class="intake-form-toast" role="status">{{ flashMsg() }}</p>
           }
 
+          @if (store.loadError()) {
+            <p class="intake-form-error" role="alert">{{ store.loadError() }}</p>
+          }
+
           @if (store.records().length === 0) {
             <section class="clinical-section-card">
               <h2 class="appointments-subtitle">Fichas registradas</h2>
               <div class="lun-empty clinical-hub-empty">
                 <p>
-                  @if (auth.canEdit()) {
+                  @if (store.loadError()) {
+                    No se pudieron cargar las fichas desde el servidor.
+                  } @else if (auth.canEdit()) {
                     No hay fichas registradas. Use el botón «Nuevo ingreso» del panel lateral o la
                     página de inicio.
                   } @else {
@@ -46,52 +52,49 @@ type SortMode = 'recent' | 'oldest' | 'alpha';
               </div>
             </section>
           } @else {
-            <section class="clinical-section-card">
+            <section class="clinical-section-card clinical-section-card--records">
               <h2 class="appointments-subtitle">Fichas registradas</h2>
               <p class="panel-lead">
                 {{ store.records().length }} adulto(s) mayor(es) en el sistema. Use el filtro para
                 encontrar una ficha.
               </p>
 
-              <div class="med-appt-filter-bar">
-                <p class="med-appt-filter-heading">Filtrar consulta</p>
-                <div class="med-appt-filter-grid">
-                  <label class="med-appt-filter-field">
-                    Nombre completo
-                    <input
-                      type="search"
-                      [(ngModel)]="qNombre"
-                      autocomplete="off"
-                    />
-                  </label>
-                  <label class="med-appt-filter-field">
-                    Documento de identidad
-                    <input
-                      type="search"
-                      [(ngModel)]="qId"
-                      autocomplete="off"
-                    />
-                  </label>
-                  <label class="med-appt-filter-field">
-                    Ordenar
-                    <select [(ngModel)]="sortMode">
-                      <option value="recent">Más reciente</option>
-                      <option value="oldest">Menos reciente</option>
-                      <option value="alpha">Orden alfabético</option>
-                    </select>
-                  </label>
-                </div>
-                @if (qNombre.trim() || qId.trim()) {
-                  <div class="med-appt-filter-actions">
-                    <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilter()">
-                      Ver todos
-                    </button>
-                    <span class="med-appt-filter-badge">
-                      {{ filtered.length }} ficha(s) encontrada(s)
-                    </span>
-                  </div>
-                }
+              <div class="records-filter clinical-records-filter">
+                <label>
+                  Nombre completo
+                  <input
+                    type="search"
+                    [(ngModel)]="qNombre"
+                    autocomplete="off"
+                  />
+                </label>
+                <label>
+                  Documento de identidad
+                  <input
+                    type="search"
+                    [(ngModel)]="qId"
+                    autocomplete="off"
+                  />
+                </label>
+                <label>
+                  Ordenar
+                  <select [(ngModel)]="sortMode">
+                    <option value="recent">Más reciente</option>
+                    <option value="oldest">Menos reciente</option>
+                    <option value="alpha">Orden alfabético</option>
+                  </select>
+                </label>
               </div>
+              @if (qNombre.trim() || qId.trim()) {
+                <div class="records-filter-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="clearFilter()">
+                    Ver todos
+                  </button>
+                  <span class="med-appt-filter-badge">
+                    {{ filtered.length }} ficha(s) encontrada(s)
+                  </span>
+                </div>
+              }
 
               @if (filtered.length === 0) {
                 <p class="appointments-empty">No hay coincidencias con la búsqueda.</p>
@@ -157,6 +160,7 @@ export class RecordsListViewComponent implements OnInit {
 
   readonly store = inject(IntakeStoreService);
   readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   flashMsg = signal('');
 
@@ -180,9 +184,8 @@ export class RecordsListViewComponent implements OnInit {
 
   printFicha(id: string): void {
     this.auth.ensureSessionPersisted();
-    this.store.open(id);
-    const url = `/ficha/${encodeURIComponent(id)}?imprimir=1`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    this.store.stashPrintPayload(id);
+    void this.router.navigate(['/ficha', id], { queryParams: { imprimir: '1' } });
   }
 
   get filtered(): IntakeRecord[] {

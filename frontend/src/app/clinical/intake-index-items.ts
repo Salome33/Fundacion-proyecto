@@ -14,7 +14,6 @@ export const INTAKE_INDEX_ITEMS: IntakeIndexItem[] = [
   { path: 'referencias-personales', anchor: 'referencias', label: 'Referencias y acudientes' },
   { path: 'acudiente', anchor: 'acudiente', label: 'Información del acudiente' },
   { path: 'valoracion-clinica', anchor: 'valoracion-clinica', label: 'Valoración clínica' },
-  { path: 'patologias', anchor: 'patologias', label: 'Patologías diagnosticadas' },
   { path: 'alergias', anchor: 'alergias', label: 'Alergias' },
   { path: 'medicamentos', anchor: 'medicamentos', label: 'Medicamentos' },
   { path: 'autopercepcion', anchor: 'autopercepcion', label: 'Autopercepción de la salud' },

@@ -1,0 +1,42 @@
+/* Respaldo mínimo si alguien usa Ctrl+P en la página principal */
+
+@media print {
+  :root {
+    --lun-bg: #ffffff !important;
+    --lun-surface: #fffef9 !important;
+    --lun-surface-soft: #fffef9 !important;
+  }
+
+  html,
+  body,
+  app-root,
+  app-clinical-intake,
+  .intake-scroll-shell,
+  .clinical-page,
+  .intake-form-window {
+    background: #ffffff !important;
+  }
+
+  .section-card,
+  .clinical-header--intake {
+    background: #fffef9 !important;
+    border: 1px solid #d4c4a8 !important;
+  }
+
+  .field-grid label {
+    background: #ffffff !important;
+    border: 1px solid #d4c4a8 !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  label,
+  .print-field-mirror {
+    color: #3d2b1f !important;
+    -webkit-text-fill-color: #3d2b1f !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}

@@ -286,5 +286,9 @@ export const EXAMEN_MENTAL_FIELDS: { id: string; label: string; hint?: string }[
   { id: 'pensamientoIncoherente', label: 'Pensamiento o ideas incoherentes' },
 ];
 
-/** @deprecated Respiratorio integrado en valoración de frecuencia respiratoria. */
-export const RESPIRATORIO_FIELDS: ExamSubField[] = [];
+export const RESPIRATORIO_REVISION_FIELDS: ExamSubField[] = [
+  { id: 'sonoridad', label: 'Sonoridad' },
+  { id: 'eupnea', label: 'Eupnea' },
+  { id: 'bradipnea', label: 'Bradipnea' },
+  { id: 'taquipnea', label: 'Taquipnea' },
+];

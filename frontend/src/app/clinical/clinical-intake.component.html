@@ -1,6 +1,36 @@
-<div class="intake-scroll-shell lun-shell">
-  <aside class="lun-sidebar lun-sidebar--scroll-index clinical-intake-index">
+<div
+  class="intake-scroll-shell lun-shell"
+  [class.clinical-sidebar-open]="sidebar.open()"
+>
+  @if (!sidebar.open()) {
+    <button
+      type="button"
+      class="clinical-sidebar-toggle"
+      (click)="sidebar.openPanel()"
+      aria-expanded="false"
+      aria-controls="clinical-intake-index"
+    >
+      Índice
+    </button>
+  }
+  @if (sidebar.open()) {
+    <button
+      type="button"
+      class="clinical-sidebar-backdrop"
+      aria-label="Cerrar índice"
+      (click)="sidebar.close()"
+    ></button>
+  }
+  <aside class="lun-sidebar lun-sidebar--scroll-index clinical-intake-index" id="clinical-intake-index">
     <div class="lun-brand">
+      <button
+        type="button"
+        class="clinical-sidebar-close"
+        aria-label="Cerrar índice"
+        (click)="sidebar.close()"
+      >
+        ×
+      </button>
       <div class="lun-brand-logo">
         <img src="assets/fundacion/logo-emblem.png" alt="Fundación Manos Unidas de Dios" />
       </div>
@@ -30,6 +60,15 @@
           <a routerLink="/fichas" class="btn btn-secondary btn-gold--block clinical-main-nav-new-btn">
             ← Volver a fichas
           </a>
+          @if (canShowPrintAction()) {
+            <button
+              type="button"
+              class="btn btn-secondary btn-gold--block clinical-main-nav-new-btn"
+              (click)="startPrint()"
+            >
+              Imprimir / PDF
+            </button>
+          }
         } @else {
           <a routerLink="/" class="btn btn-secondary btn-gold--block clinical-main-nav-new-btn">
             ← Volver al inicio
@@ -62,7 +101,11 @@
     </div>
   </aside>
 
-  <div class="clinical-page intake-scroll-main" [formGroup]="form" [class.intake-readonly]="!auth.canEdit()">
+  <div
+    class="clinical-page intake-scroll-main"
+    [formGroup]="form"
+    [class.intake-readonly]="!auth.canEdit() || printMode"
+  >
   <div class="intake-form-window">
   <header class="clinical-header clinical-header--intake">
     <img src="assets/fundacion/logo-emblem.png" alt="Fundación Manos Unidas de Dios" />
@@ -70,10 +113,35 @@
       <h1>Formato de ingreso y valoración clínica — Adulto mayor</h1>
       <p>Fundación Manos Unidas de Dios · Centro de Protección Social</p>
     </div>
+    @if (canShowPrintAction()) {
+      <div class="clinical-header-actions">
+        <button type="button" class="btn btn-secondary btn-gold--xl intake-print-btn" (click)="startPrint()">
+          Imprimir / PDF
+        </button>
+      </div>
+    }
   </header>
 
+  @if (printMode && printBannerVisible()) {
+    <div class="intake-print-banner" role="status" aria-live="polite">
+      <p>{{ printHintMsg() }}</p>
+      <div class="intake-print-banner-actions">
+        <button type="button" class="btn btn-secondary btn-sm intake-print-banner-btn" (click)="retryPrint()">
+          Abrir diálogo de impresión
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm intake-print-banner-btn" (click)="exitPrintMode()">
+          Volver a la ficha
+        </button>
+      </div>
+    </div>
+  }
+
   @if (saveMsg()) {
-    <p class="intake-form-toast" role="status">{{ saveMsg() }}</p>
+    <p
+      [class]="saveFailed() ? 'intake-form-error' : 'intake-form-toast'"
+      [attr.role]="saveFailed() ? 'alert' : 'status'"
+      >{{ saveMsg() }}</p
+    >
   }
 
   <div class="clinical-shell clinical-shell--single">
@@ -91,6 +159,13 @@
       <section class="section-card" id="personal" formGroupName="personal">
         <h2>Información personal</h2>
         <div class="personal-with-photo">
+          <div class="photo-attach-col">
+            <app-photo-attach
+              formControlName="foto"
+              header="Anexar foto"
+              sizeHint="3,5 × 4,5 cm"
+            />
+          </div>
           <div class="field-grid">
             <label>Fecha de ingreso<input type="date" formControlName="fechaIngreso" /></label>
             <label
@@ -135,13 +210,6 @@
             <label>Profesión<input formControlName="profesion" /></label>
             <label>Confesión religiosa<input formControlName="confesionReligiosa" /></label>
           </div>
-          <div class="photo-attach-col">
-            <app-photo-attach
-              formControlName="foto"
-              header="Anexar foto"
-              sizeHint="3,5 × 4,5 cm"
-            />
-          </div>
         </div>
       </section>
 
@@ -164,39 +232,37 @@
       <section class="section-card" id="familiar" formGroupName="familiar">
         <h2>Información familiar y social</h2>
         <div class="field-grid">
-          <label class="field-full">Nombre de la madre<input formControlName="nombreMadre" /></label>
           <label class="field-full">Nombre del padre<input formControlName="nombrePadre" /></label>
+          <label class="field-full">Nombre de la madre<input formControlName="nombreMadre" /></label>
           <label class="field-full"
-            >¿Con quién vive actualmente?<input formControlName="conQuienVive"
+            >¿Con quién vive actualmente el adulto mayor?<input formControlName="conQuienVive"
           /></label>
           <label class="field-full"
-            >Principal cuidador<input formControlName="cuidadorPrincipal"
+            >¿Quién es el principal cuidador o responsable de su atención?<input
+              formControlName="cuidadorPrincipal"
           /></label>
           <label class="field-full"
-            >Familiares cercanos<input formControlName="familiaresCercanos"
+            >¿Cuenta con familiares cercanos? ¿Quiénes son?<input
+              formControlName="familiaresCercanos"
           /></label>
-          <label>Frecuencia de visitas<input formControlName="frecuenciaVisitas" /></label>
           <label class="field-full"
-            >Relación con la familia<textarea formControlName="relacionFamilia"></textarea
+            >¿Cómo es la relación el adulto mayor con su familia?<textarea
+              formControlName="relacionFamilia"
+            ></textarea
           ></label>
           <label class="field-full"
-            >Persona para decisiones en emergencia<input formControlName="decisionEmergencia"
+            >¿Existe alguna persona responsable de tomar decisiones en caso de emergencia?<input
+              formControlName="decisionEmergencia"
           /></label>
           <label class="field-full"
-            >Actividades sociales / comunitarias / religiosas<textarea
+            >¿El adulto mayor participa de actividades sociales, comunitarias o religiosas?<textarea
               formControlName="actividadesSociales"
             ></textarea
           ></label>
           <label class="field-full"
-            >Antecedentes abandono / maltrato<textarea
+            >¿Presenta antecedentes de abandono, maltrato o negligencia?<textarea
               formControlName="antecedentesMaltrato"
             ></textarea
-          ></label>
-          <label class="field-full"
-            >Expectativas de la familia<textarea formControlName="expectativas"></textarea
-          ></label>
-          <label class="field-full"
-            >Razón principal del ingreso<textarea formControlName="razonIngreso"></textarea
           ></label>
         </div>
       </section>
@@ -223,6 +289,20 @@
           <button type="button" class="btn btn-secondary" (click)="formApi.addHijo()">
             + Agregar hijo
           </button>
+        </div>
+        <div formGroupName="familiar" class="field-grid hijos-extra-questions">
+          <label class="field-full"
+            >¿Qué expectativas tiene la familia o el adulto mayor respecto a la atención que recibirá?<textarea
+              formControlName="expectativas"
+              rows="3"
+            ></textarea
+          ></label>
+          <label class="field-full"
+            >¿Cuál es la razón principal por la que solicita el ingreso a la institución?<textarea
+              formControlName="razonIngreso"
+              rows="3"
+            ></textarea
+          ></label>
         </div>
       </section>
 
@@ -257,21 +337,23 @@
         <div formArrayName="acudientes">
           @for (ac of acudientes.controls; track $index) {
             <div class="acudiente-with-photo entry-card entry-card--relative" [formGroupName]="$index">
-              <div class="field-grid">
-                <label>Nombre<input formControlName="nombre" /></label>
-                <label>Identificación<input formControlName="identificacion" /></label>
-                <label>Contacto<input formControlName="contacto" /></label>
-                <label>Correo<input formControlName="email" /></label>
-                <label class="field-full">Dirección<input formControlName="direccion" /></label>
-                <label>Ingresos dependen de<input formControlName="ingresosDependen" /></label>
-                <label>Parentesco<input formControlName="parentesco" /></label>
-              </div>
               <div class="photo-attach-col">
                 <app-photo-attach
                   formControlName="foto"
                   header="Anexar foto"
                   sizeHint="3,5 × 4,5 cm"
                 />
+              </div>
+              <div class="field-grid">
+                <label>Nombre<input formControlName="nombre" /></label>
+                <label>Identificación<input formControlName="identificacion" /></label>
+                <label>Contacto<input formControlName="contacto" /></label>
+                <label>Correo<input formControlName="email" /></label>
+                <label class="field-full">Dirección<input formControlName="direccion" /></label>
+                <label class="field-full"
+                  >Los ingresos económicos dependen de:<input formControlName="ingresosDependen"
+                /></label>
+                <label>Parentesco<input formControlName="parentesco" /></label>
               </div>
               @if ($index > 0) {
                 <button
@@ -318,13 +400,6 @@
                 <label>Dosis<input formControlName="dosis" /></label>
                 <label>Horarios<input formControlName="horarios" /></label>
               </div>
-              <div class="pdf-attach-col">
-                <app-pdf-attach
-                  formControlName="soporteFormulaPdf"
-                  [fileName]="$any(m).get('soporteFormulaNombre')?.value"
-                  (fileNameChange)="$any(m).patchValue({ soporteFormulaNombre: $event })"
-                />
-              </div>
               @if ($index > 0) {
                 <button type="button" class="link-remove" (click)="formApi.removeMedicamento($index)">
                   Quitar medicamento
@@ -337,6 +412,13 @@
           <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
             + Agregar medicamento
           </button>
+        </div>
+        <div class="pdf-attach-col">
+          <app-pdf-attach
+            formControlName="soporteFormulaPdf"
+            [fileName]="clinicaGroup.get('soporteFormulaNombre')?.value"
+            (fileNameChange)="clinicaGroup.patchValue({ soporteFormulaNombre: $event })"
+          />
         </div>
       </section>
 
@@ -368,16 +450,26 @@
       <section class="section-card" id="condicion-general">
         <h2>Condición general</h2>
         <div class="field-grid">
-          <label>Higiénico<input formControlName="higienico" /></label>
-          <label>Nutricional<input formControlName="nutricional" /></label>
-          <label>¿Necesita ayuda para movilizarse?<input formControlName="ayudaMovilizarse" /></label>
-          <label>¿Necesita inmovilización?<input formControlName="inmovilizacion" /></label>
-          <label>¿Autoriza inmovilización?<input formControlName="autorizaInmovilizacion" /></label>
-          <label>¿Camina solo?<input formControlName="caminaSolo" /></label>
-          <label>¿Camina con bastón?<input formControlName="caminaBaston" /></label>
-          <label>¿Movilización en silla de ruedas?<input formControlName="sillaRuedas" /></label>
-          <label>MSS<input formControlName="mss" /></label>
-          <label>MII<input formControlName="mii" /></label>
+          <label class="field-full">Higiénico<input formControlName="higienico" /></label>
+          <label class="field-full">Nutricional<input formControlName="nutricional" /></label>
+          <label class="field-full"
+            >¿Necesita ayuda para movilizarse?<input formControlName="ayudaMovilizarse"
+          /></label>
+          <label class="field-full"
+            >¿El adulto mayor necesita ser inmovilizado?<input formControlName="inmovilizacion"
+          /></label>
+          <label class="field-full"
+            >¿Autoriza la inmovilización?<input formControlName="autorizaInmovilizacion"
+          /></label>
+          <label class="field-full">¿Camina solo?<input formControlName="caminaSolo" /></label>
+          <label class="field-full"
+            >¿Camina con ayuda de bastón?<input formControlName="caminaBaston"
+          /></label>
+          <label class="field-full"
+            >¿Movilización en silla de ruedas?<input formControlName="sillaRuedas"
+          /></label>
+          <label class="field-full">MSS<input formControlName="mss" /></label>
+          <label class="field-full">MII<input formControlName="mii" /></label>
         </div>
       </section>
       </div>
@@ -472,9 +564,10 @@
         </div>
       </section>
 
-      <section class="section-card" id="examen" formGroupName="examenFisico">
+      <section class="section-card" id="examen">
         <h2>Examen físico</h2>
-        <div class="exam-regions">
+        <div class="exam-section-regions">
+        <div formGroupName="examenFisico" class="exam-regions">
           @for (region of examRegions; track region.id) {
             <div class="exam-region-block exam-region-block--boxed" [formGroupName]="region.id">
               <h3 class="exam-region-title">{{ region.label }}</h3>
@@ -539,6 +632,32 @@
                   </div>
                 </div>
               }
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div formGroupName="revisionSistemas" class="exam-regions exam-regions--revision">
+          <div class="exam-region-block exam-region-block--boxed revision-sistemas-block">
+            <h3 class="exam-region-title">Revisión por sistemas</h3>
+            <div class="revision-sistemas-sections">
+              <div formGroupName="respiratorio" class="entry-card incontinencia-panel revision-respiratorio-panel">
+                <h4 class="exam-region-title revision-sistemas-subtitle">Respiratorio</h4>
+                <div class="field-grid exam-subfields-grid field-grid--row-3 revision-respiratorio-grid">
+                  @for (field of respiratorioRevisionFields; track field.id) {
+                    <div class="exam-subfield-item">
+                      <h4 class="exam-subfield-title">{{ field.label }}</h4>
+                      <div class="clinical-field-box clinical-field-box--solo">
+                        <textarea
+                          class="clinical-field-control"
+                          [formControlName]="field.id"
+                          rows="2"
+                        ></textarea>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -642,9 +761,9 @@
           <label>FC<input formControlName="fc" /></label>
           <label>FR<input formControlName="fr" /></label>
           <label>SPO2<input formControlName="spo2" /></label>
-          <label>Peso (kg)<input formControlName="peso" type="number" /></label>
-          <label>Talla (cm)<input formControlName="talla" type="number" /></label>
-          <label>IMC<input formControlName="imc" type="number" step="0.1" /></label>
+          <label>Peso (kg)<input formControlName="peso" type="text" inputmode="decimal" class="input-plain-number" /></label>
+          <label>Talla (cm)<input formControlName="talla" type="text" inputmode="decimal" class="input-plain-number" /></label>
+          <label>IM<input formControlName="imc" type="text" inputmode="decimal" class="input-plain-number" /></label>
         </div>
       </section>
 
@@ -664,6 +783,22 @@
         <app-clinical-body-scratch
           [intakeKey]="storeApi.currentId() ?? draftIntakeKey()"
         />
+        @if (showBodyPrintSheet()) {
+          <div class="body-graphic-print-sheet" aria-hidden="true">
+            <figure class="body-graphic-print-view">
+              @if (bodyPrintFrontSrc(); as frontSrc) {
+                <img [src]="frontSrc" alt="Vista frontal del cuerpo con marcas" />
+              }
+              <figcaption>Frontal</figcaption>
+            </figure>
+            <figure class="body-graphic-print-view">
+              @if (bodyPrintBackSrc(); as backSrc) {
+                <img [src]="backSrc" alt="Vista posterior del cuerpo con marcas" />
+              }
+              <figcaption>Posterior</figcaption>
+            </figure>
+          </div>
+        }
         <label class="clinical-field-box clinical-field-box--observaciones field-observaciones field-full">
           <span class="clinical-field-box-label">Observaciones</span>
           <textarea
@@ -701,72 +836,42 @@
       </section>
 
       <section class="section-card" id="escala-tinetti-equilibrio" formGroupName="escalas">
-        <h2>Escala de Tinetti — Parte 1: Equilibrio (máx. 15)</h2>
+        <h2>Escala de Tinetti — Parte 1: Equilibrio (máx. {{ tinettiBalanceMax }})</h2>
         <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
-        <div [formGroup]="tinettiBalanceGroup()">
-          <ul class="scale-question-list">
-            @for (item of tinettiBalance; track item.id) {
-              <li class="scale-question-item scale-question-item--tinetti">
-                <p class="scale-question-text">{{ item.label }}</p>
-                <div class="scale-question-options scale-question-options--stack">
-                  @for (opt of item.options; track opt.label) {
-                    <label class="scale-question-option">
-                      <input type="radio" [formControlName]="item.id" [value]="opt.score" />
-                      <span class="scale-option-label">{{ opt.label }}</span>
-                      <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
-                        opt.score
-                      }}</span>
-                    </label>
-                  }
-                </div>
-              </li>
-            }
-          </ul>
+        <app-tinetti-scale-list
+          [items]="tinettiBalance"
+          [group]="tinettiBalanceGroup()"
+          namePrefix="ti_balance"
+        />
           <p class="scale-total">
             <strong
-              >Total equilibrio: {{ tinettiTotal('balance') }} / 15 · Porcentaje:
+              >Total equilibrio: {{ tinettiTotal('balance') }} / {{ tinettiBalanceMax }} · Porcentaje:
               {{ tinettiPercent('balance') }}%</strong
             >
           </p>
-        </div>
       </section>
 
       <section class="section-card" id="escala-tinetti-marcha" formGroupName="escalas">
-        <h2>Escala de Tinetti — Parte 2: Marcha (máx. 12)</h2>
+        <h2>Escala de Tinetti — Parte 2: Marcha (máx. {{ tinettiGaitMax }})</h2>
         <p class="scale-sub">{{ tinettiGaitIntro }}</p>
-        <div [formGroup]="tinettiGaitGroup()">
-          <ul class="scale-question-list">
-            @for (item of tinettiGait; track item.id) {
-              <li class="scale-question-item scale-question-item--tinetti">
-                <p class="scale-question-text">{{ item.label }}</p>
-                <div class="scale-question-options scale-question-options--stack">
-                  @for (opt of item.options; track opt.label) {
-                    <label class="scale-question-option">
-                      <input type="radio" [formControlName]="item.id" [value]="opt.score" />
-                      <span class="scale-option-label">{{ opt.label }}</span>
-                      <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
-                        opt.score
-                      }}</span>
-                    </label>
-                  }
-                </div>
-              </li>
-            }
-          </ul>
+        <app-tinetti-scale-list
+          [items]="tinettiGait"
+          [group]="tinettiGaitGroup()"
+          namePrefix="ti_gait"
+        />
           <p class="scale-total">
             <strong
-              >Total marcha: {{ tinettiTotal('gait') }} / 12 · Porcentaje:
+              >Total marcha: {{ tinettiTotal('gait') }} / {{ tinettiGaitMax }} · Porcentaje:
               {{ tinettiPercent('gait') }}%</strong
             >
           </p>
           <p class="scale-total">
             <strong
-              >Total general Tinetti: {{ tinettiGeneralTotal() }} / 27 · Porcentaje:
+              >Total general Tinetti: {{ tinettiGeneralTotal() }} / {{ tinettiTotalMax }} · Porcentaje:
               {{ tinettiGeneralPercent() }}%</strong
             >
             <span class="interp">{{ tinettiInterpret(tinettiGeneralTotal()) }}</span>
           </p>
-        </div>
       </section>
 
       <section class="section-card" id="escala-pfeiffer" formGroupName="escalas">
@@ -785,6 +890,12 @@
                     }
                   </span>
                 </label>
+                <input
+                  class="scale-pfeiffer-response"
+                  type="text"
+                  [formControlName]="q.id + 'Respuesta'"
+                  [attr.aria-label]="'Respuesta del adulto mayor: ' + q.label"
+                />
               </li>
             }
           </ul>
@@ -802,14 +913,24 @@
             @for (q of gdsQ; track q.id) {
               <li class="scale-question-item scale-question-item--gds">
                 <p class="scale-question-text">{{ q.label }}</p>
-                <p class="scale-question-detail">{{ q.detail }}</p>
+                @if (q.detail) {
+                  <p class="scale-question-detail">{{ q.detail }}</p>
+                }
                 <div class="scale-question-options scale-question-options--stack">
-                  <label class="scale-question-option"
-                    ><input type="radio" [formControlName]="q.id" value="si" /> Sí</label
-                  >
-                  <label class="scale-question-option"
-                    ><input type="radio" [formControlName]="q.id" value="no" /> No</label
-                  >
+                  <label class="scale-question-option">
+                    <input type="radio" [formControlName]="q.id" value="si" />
+                    <span class="scale-option-label">Sí</span>
+                    <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + q.yesScore">{{
+                      q.yesScore
+                    }}</span>
+                  </label>
+                  <label class="scale-question-option">
+                    <input type="radio" [formControlName]="q.id" value="no" />
+                    <span class="scale-option-label">No</span>
+                    <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + gdsNoScore(q.yesScore)">{{
+                      gdsNoScore(q.yesScore)
+                    }}</span>
+                  </label>
                 </div>
               </li>
             }

@@ -88,10 +88,8 @@ public class FichaFormPersistenceService {
         jdbc.query(
                 "SELECT contrato_numero, observaciones_generales FROM ficha_clinica WHERE id = ?",
                 rs -> {
-                    if (rs.next()) {
-                        data.put("contratoNumero", rs.getString("contrato_numero"));
-                        data.put("observacionesGenerales", rs.getString("observaciones_generales"));
-                    }
+                    data.put("contratoNumero", rs.getString("contrato_numero"));
+                    data.put("observacionesGenerales", rs.getString("observaciones_generales"));
                 },
                 fichaId);
     }
@@ -147,30 +145,28 @@ public class FichaFormPersistenceService {
         jdbc.query(
                 "SELECT * FROM datos_personales WHERE ficha_id = ?",
                 rs -> {
-                    if (rs.next()) {
-                        personal.put("fechaIngreso", formatDate(rs.getDate("fecha_ingreso")));
-                        personal.put("fechaActualizacion", formatDate(rs.getDate("fecha_actualizacion")));
-                        personal.put("modalidad", rs.getString("modalidad"));
-                        personal.put("nombreApellidos", rs.getString("nombre_apellidos"));
-                        personal.put("identificacion", rs.getString("identificacion"));
-                        personal.put("lugarExpedicion", rs.getString("lugar_expedicion"));
-                        personal.put("fechaExpedicion", formatDate(rs.getDate("fecha_expedicion")));
-                        personal.put("lugarNacimiento", rs.getString("lugar_nacimiento"));
-                        personal.put("fechaNacimiento", formatDate(rs.getDate("fecha_nacimiento")));
-                        personal.put("edad", rs.getString("edad"));
-                        personal.put("rh", rs.getString("rh"));
-                        personal.put("sexo", rs.getString("sexo"));
-                        personal.put("estadoCivil", rs.getString("estado_civil"));
-                        personal.put("nombreConyuge", rs.getString("nombre_conyuge"));
-                        personal.put("estudios", rs.getString("estudios"));
-                        personal.put("eps", rs.getString("eps"));
-                        personal.put("regimen", rs.getString("regimen"));
-                        personal.put("lugarAtencion", rs.getString("lugar_atencion"));
-                        personal.put("serviciosFunerarios", rs.getString("servicios_funerarios"));
-                        personal.put("profesion", rs.getString("profesion"));
-                        personal.put("confesionReligiosa", rs.getString("confesion_religiosa"));
-                        personal.put("foto", rs.getString("foto_url"));
-                    }
+                    personal.put("fechaIngreso", formatDate(rs.getDate("fecha_ingreso")));
+                    personal.put("fechaActualizacion", formatDate(rs.getDate("fecha_actualizacion")));
+                    personal.put("modalidad", rs.getString("modalidad"));
+                    personal.put("nombreApellidos", rs.getString("nombre_apellidos"));
+                    personal.put("identificacion", rs.getString("identificacion"));
+                    personal.put("lugarExpedicion", rs.getString("lugar_expedicion"));
+                    personal.put("fechaExpedicion", formatDate(rs.getDate("fecha_expedicion")));
+                    personal.put("lugarNacimiento", rs.getString("lugar_nacimiento"));
+                    personal.put("fechaNacimiento", formatDate(rs.getDate("fecha_nacimiento")));
+                    personal.put("edad", rs.getString("edad"));
+                    personal.put("rh", rs.getString("rh"));
+                    personal.put("sexo", rs.getString("sexo"));
+                    personal.put("estadoCivil", rs.getString("estado_civil"));
+                    personal.put("nombreConyuge", rs.getString("nombre_conyuge"));
+                    personal.put("estudios", rs.getString("estudios"));
+                    personal.put("eps", rs.getString("eps"));
+                    personal.put("regimen", rs.getString("regimen"));
+                    personal.put("lugarAtencion", rs.getString("lugar_atencion"));
+                    personal.put("serviciosFunerarios", rs.getString("servicios_funerarios"));
+                    personal.put("profesion", rs.getString("profesion"));
+                    personal.put("confesionReligiosa", rs.getString("confesion_religiosa"));
+                    personal.put("foto", rs.getString("foto_url"));
                 },
                 fichaId);
         data.put("personal", personal);
@@ -195,12 +191,10 @@ public class FichaFormPersistenceService {
     private void loadDatosEconomicos(String fichaId, Map<String, Object> data) {
         Map<String, Object> economica = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM datos_economicos WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                economica.put("ingresosDe", rs.getString("ingresos_de"));
-                economica.put("apoyoGubernamental", rs.getString("apoyo_gubernamental"));
-                economica.put("viviendaTipo", rs.getString("vivienda_tipo"));
-                economica.put("direccion", rs.getString("direccion"));
-            }
+            economica.put("ingresosDe", rs.getString("ingresos_de"));
+            economica.put("apoyoGubernamental", rs.getString("apoyo_gubernamental"));
+            economica.put("viviendaTipo", rs.getString("vivienda_tipo"));
+            economica.put("direccion", rs.getString("direccion"));
         }, fichaId);
         data.put("economica", economica);
     }
@@ -239,20 +233,18 @@ public class FichaFormPersistenceService {
     private void loadDatosFamiliares(String fichaId, Map<String, Object> data) {
         Map<String, Object> familiar = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM datos_familiares WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                familiar.put("nombreMadre", rs.getString("nombre_madre"));
-                familiar.put("nombrePadre", rs.getString("nombre_padre"));
-                familiar.put("conQuienVive", rs.getString("con_quien_vive"));
-                familiar.put("cuidadorPrincipal", rs.getString("cuidador_principal"));
-                familiar.put("familiaresCercanos", rs.getString("familiares_cercanos"));
-                familiar.put("frecuenciaVisitas", rs.getString("frecuencia_visitas"));
-                familiar.put("relacionFamilia", rs.getString("relacion_familia"));
-                familiar.put("decisionEmergencia", rs.getString("decision_emergencia"));
-                familiar.put("actividadesSociales", rs.getString("actividades_sociales"));
-                familiar.put("antecedentesMaltrato", rs.getString("antecedentes_maltrato"));
-                familiar.put("expectativas", rs.getString("expectativas"));
-                familiar.put("razonIngreso", rs.getString("razon_ingreso"));
-            }
+            familiar.put("nombreMadre", rs.getString("nombre_madre"));
+            familiar.put("nombrePadre", rs.getString("nombre_padre"));
+            familiar.put("conQuienVive", rs.getString("con_quien_vive"));
+            familiar.put("cuidadorPrincipal", rs.getString("cuidador_principal"));
+            familiar.put("familiaresCercanos", rs.getString("familiares_cercanos"));
+            familiar.put("frecuenciaVisitas", rs.getString("frecuencia_visitas"));
+            familiar.put("relacionFamilia", rs.getString("relacion_familia"));
+            familiar.put("decisionEmergencia", rs.getString("decision_emergencia"));
+            familiar.put("actividadesSociales", rs.getString("actividades_sociales"));
+            familiar.put("antecedentesMaltrato", rs.getString("antecedentes_maltrato"));
+            familiar.put("expectativas", rs.getString("expectativas"));
+            familiar.put("razonIngreso", rs.getString("razon_ingreso"));
         }, fichaId);
         data.put("familiar", familiar);
     }
@@ -260,28 +252,32 @@ public class FichaFormPersistenceService {
     private void upsertPerfilClinico(String fichaId, Map<String, Object> data) {
         Map<String, Object> c = FormMapUtil.asMap(data.get("clinica"));
         jdbc.update("""
-                INSERT INTO perfil_clinico (ficha_id, patologia, alergias_med, alergias_alim, alergias_otros)
-                VALUES (?,?,?,?,?)
+                INSERT INTO perfil_clinico (ficha_id, patologia, alergias_med, alergias_alim, alergias_otros, soporte_formula_pdf, soporte_formula_nombre)
+                VALUES (?,?,?,?,?,?,?)
                 ON CONFLICT (ficha_id) DO UPDATE SET
                     patologia=EXCLUDED.patologia, alergias_med=EXCLUDED.alergias_med,
-                    alergias_alim=EXCLUDED.alergias_alim, alergias_otros=EXCLUDED.alergias_otros
+                    alergias_alim=EXCLUDED.alergias_alim, alergias_otros=EXCLUDED.alergias_otros,
+                    soporte_formula_pdf=EXCLUDED.soporte_formula_pdf,
+                    soporte_formula_nombre=EXCLUDED.soporte_formula_nombre
                 """,
                 fichaId,
                 FormMapUtil.str(c.get("patologia")),
                 FormMapUtil.str(c.get("alergiasMed")),
                 FormMapUtil.str(c.get("alergiasAlim")),
-                FormMapUtil.str(c.get("alergiasOtros")));
+                FormMapUtil.str(c.get("alergiasOtros")),
+                FormMapUtil.str(c.get("soporteFormulaPdf")),
+                FormMapUtil.str(c.get("soporteFormulaNombre")));
     }
 
     private void loadPerfilClinico(String fichaId, Map<String, Object> data) {
         Map<String, Object> clinica = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM perfil_clinico WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                clinica.put("patologia", rs.getString("patologia"));
-                clinica.put("alergiasMed", rs.getString("alergias_med"));
-                clinica.put("alergiasAlim", rs.getString("alergias_alim"));
-                clinica.put("alergiasOtros", rs.getString("alergias_otros"));
-            }
+            clinica.put("patologia", rs.getString("patologia"));
+            clinica.put("alergiasMed", rs.getString("alergias_med"));
+            clinica.put("alergiasAlim", rs.getString("alergias_alim"));
+            clinica.put("alergiasOtros", rs.getString("alergias_otros"));
+            clinica.put("soporteFormulaPdf", rs.getString("soporte_formula_pdf"));
+            clinica.put("soporteFormulaNombre", rs.getString("soporte_formula_nombre"));
         }, fichaId);
         data.put("clinica", clinica);
     }
@@ -323,22 +319,20 @@ public class FichaFormPersistenceService {
     private void loadAutopercepcion(String fichaId, Map<String, Object> data) {
         Map<String, Object> autopercepcion = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM autopercepcion WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                autopercepcion.put("estadoSalud", rs.getString("estado_salud"));
-                autopercepcion.put("anamnesisAspecto", rs.getString("anamnesis_aspecto"));
-                autopercepcion.put("anamnesisEmocional", rs.getString("anamnesis_emocional"));
-                autopercepcion.put("anamnesisFisico", rs.getString("anamnesis_fisico"));
-                autopercepcion.put("higienico", rs.getString("higienico"));
-                autopercepcion.put("nutricional", rs.getString("nutricional"));
-                autopercepcion.put("ayudaMovilizarse", rs.getString("ayuda_movilizarse"));
-                autopercepcion.put("inmovilizacion", rs.getString("inmovilizacion"));
-                autopercepcion.put("autorizaInmovilizacion", rs.getString("autoriza_inmovilizacion"));
-                autopercepcion.put("caminaSolo", rs.getString("camina_solo"));
-                autopercepcion.put("caminaBaston", rs.getString("camina_baston"));
-                autopercepcion.put("sillaRuedas", rs.getString("silla_ruedas"));
-                autopercepcion.put("mss", rs.getString("mss"));
-                autopercepcion.put("mii", rs.getString("mii"));
-            }
+            autopercepcion.put("estadoSalud", rs.getString("estado_salud"));
+            autopercepcion.put("anamnesisAspecto", rs.getString("anamnesis_aspecto"));
+            autopercepcion.put("anamnesisEmocional", rs.getString("anamnesis_emocional"));
+            autopercepcion.put("anamnesisFisico", rs.getString("anamnesis_fisico"));
+            autopercepcion.put("higienico", rs.getString("higienico"));
+            autopercepcion.put("nutricional", rs.getString("nutricional"));
+            autopercepcion.put("ayudaMovilizarse", rs.getString("ayuda_movilizarse"));
+            autopercepcion.put("inmovilizacion", rs.getString("inmovilizacion"));
+            autopercepcion.put("autorizaInmovilizacion", rs.getString("autoriza_inmovilizacion"));
+            autopercepcion.put("caminaSolo", rs.getString("camina_solo"));
+            autopercepcion.put("caminaBaston", rs.getString("camina_baston"));
+            autopercepcion.put("sillaRuedas", rs.getString("silla_ruedas"));
+            autopercepcion.put("mss", rs.getString("mss"));
+            autopercepcion.put("mii", rs.getString("mii"));
         }, fichaId);
         data.put("autopercepcion", autopercepcion);
     }
@@ -368,22 +362,16 @@ public class FichaFormPersistenceService {
         Map<String, Object> alcohol = new LinkedHashMap<>();
         Map<String, Object> otraSustancia = new LinkedHashMap<>();
         jdbc.query("SELECT consume, frecuencia FROM habito_tabaco WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                tabaco.put("consume", rs.getString("consume"));
-                tabaco.put("frecuencia", rs.getString("frecuencia"));
-            }
+            tabaco.put("consume", rs.getString("consume"));
+            tabaco.put("frecuencia", rs.getString("frecuencia"));
         }, fichaId);
         jdbc.query("SELECT consume, frecuencia FROM habito_alcohol WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                alcohol.put("consume", rs.getString("consume"));
-                alcohol.put("frecuencia", rs.getString("frecuencia"));
-            }
+            alcohol.put("consume", rs.getString("consume"));
+            alcohol.put("frecuencia", rs.getString("frecuencia"));
         }, fichaId);
         jdbc.query("SELECT nombre, frecuencia FROM otra_sustancia_principal WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                otraSustancia.put("nombre", rs.getString("nombre"));
-                otraSustancia.put("frecuencia", rs.getString("frecuencia"));
-            }
+            otraSustancia.put("nombre", rs.getString("nombre"));
+            otraSustancia.put("frecuencia", rs.getString("frecuencia"));
         }, fichaId);
         riesgoSalud.put("tabaco", tabaco);
         riesgoSalud.put("alcohol", alcohol);
@@ -422,19 +410,15 @@ public class FichaFormPersistenceService {
         Map<String, Object> antecedentes = new LinkedHashMap<>();
         Map<String, Object> antecedentesCaidas = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM antecedentes WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                antecedentes.put("quirurgicos", rs.getString("quirurgicos"));
-                antecedentes.put("patologicos", rs.getString("patologicos"));
-                antecedentes.put("farmacologicos", rs.getString("farmacologicos"));
-                antecedentes.put("alergicos", rs.getString("alergicos"));
-                antecedentes.put("cancer", rs.getString("cancer"));
-            }
+            antecedentes.put("quirurgicos", rs.getString("quirurgicos"));
+            antecedentes.put("patologicos", rs.getString("patologicos"));
+            antecedentes.put("farmacologicos", rs.getString("farmacologicos"));
+            antecedentes.put("alergicos", rs.getString("alergicos"));
+            antecedentes.put("cancer", rs.getString("cancer"));
         }, fichaId);
         jdbc.query("SELECT * FROM antecedentes_caidas WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                antecedentesCaidas.put("caidasPropiaAltura", rs.getString("caidas_propia_altura"));
-                antecedentesCaidas.put("riesgoCaida", rs.getString("riesgo_caida"));
-            }
+            antecedentesCaidas.put("caidasPropiaAltura", rs.getString("caidas_propia_altura"));
+            antecedentesCaidas.put("riesgoCaida", rs.getString("riesgo_caida"));
         }, fichaId);
         data.put("antecedentes", antecedentes);
         data.put("antecedentesCaidas", antecedentesCaidas);
@@ -462,39 +446,48 @@ public class FichaFormPersistenceService {
     private void loadSignosVitalesIngreso(String fichaId, Map<String, Object> data) {
         Map<String, Object> signosVitales = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM signos_vitales_ingreso WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                signosVitales.put("ta", rs.getString("ta"));
-                signosVitales.put("fc", rs.getString("fc"));
-                signosVitales.put("fr", rs.getString("fr"));
-                signosVitales.put("spo2", rs.getString("spo2"));
-                signosVitales.put("peso", decimalToString(rs.getBigDecimal("peso")));
-                signosVitales.put("talla", decimalToString(rs.getBigDecimal("talla")));
-                signosVitales.put("imc", decimalToString(rs.getBigDecimal("imc")));
-            }
+            signosVitales.put("ta", rs.getString("ta"));
+            signosVitales.put("fc", rs.getString("fc"));
+            signosVitales.put("fr", rs.getString("fr"));
+            signosVitales.put("spo2", rs.getString("spo2"));
+            signosVitales.put("peso", decimalToString(rs.getBigDecimal("peso")));
+            signosVitales.put("talla", decimalToString(rs.getBigDecimal("talla")));
+            signosVitales.put("imc", decimalToString(rs.getBigDecimal("imc")));
         }, fichaId);
         data.put("signosVitales", signosVitales);
     }
 
     private void upsertModeloCorporal(String fichaId, Map<String, Object> data) {
         jdbc.update("""
-                INSERT INTO modelo_corporal (ficha_id, body_paint_image, descripcion_observaciones)
-                VALUES (?,?,?)
+                INSERT INTO modelo_corporal (
+                    ficha_id, body_paint_image, body_print_front, body_print_back, descripcion_observaciones
+                ) VALUES (?,?,?,?,?)
                 ON CONFLICT (ficha_id) DO UPDATE SET
                     body_paint_image=EXCLUDED.body_paint_image,
+                    body_print_front=EXCLUDED.body_print_front,
+                    body_print_back=EXCLUDED.body_print_back,
                     descripcion_observaciones=EXCLUDED.descripcion_observaciones
                 """,
                 fichaId,
                 FormMapUtil.str(data.get("bodyPaintImage")),
+                FormMapUtil.str(data.get("bodyPrintFrontImage")),
+                FormMapUtil.str(data.get("bodyPrintBackImage")),
                 FormMapUtil.str(data.get("descripcionCuerpoObservaciones")));
     }
 
     private void loadModeloCorporal(String fichaId, Map<String, Object> data) {
-        jdbc.query("SELECT body_paint_image, descripcion_observaciones FROM modelo_corporal WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                data.put("bodyPaintImage", rs.getString("body_paint_image"));
-                data.put("descripcionCuerpoObservaciones", rs.getString("descripcion_observaciones"));
-            }
-        }, fichaId);
+        jdbc.query(
+                """
+                SELECT body_paint_image, body_print_front, body_print_back, descripcion_observaciones
+                FROM modelo_corporal WHERE ficha_id = ?
+                """,
+                rs -> {
+                    data.put("bodyPaintImage", rs.getString("body_paint_image"));
+                    data.put("bodyPrintFrontImage", rs.getString("body_print_front"));
+                    data.put("bodyPrintBackImage", rs.getString("body_print_back"));
+                    data.put("descripcionCuerpoObservaciones", rs.getString("descripcion_observaciones"));
+                },
+                fichaId);
     }
 
     private void upsertValoracionGeriatrica(String fichaId, Map<String, Object> data) {
@@ -506,9 +499,7 @@ public class FichaFormPersistenceService {
 
     private void loadValoracionGeriatrica(String fichaId, Map<String, Object> data) {
         jdbc.query("SELECT escalas_observaciones FROM valoracion_geriatrica WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                data.put("escalasObservaciones", rs.getString("escalas_observaciones"));
-            }
+            data.put("escalasObservaciones", rs.getString("escalas_observaciones"));
         }, fichaId);
     }
 
@@ -531,12 +522,10 @@ public class FichaFormPersistenceService {
     private void loadDeclaracion(String fichaId, Map<String, Object> data) {
         Map<String, Object> declaracion = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM declaracion_acudiente WHERE ficha_id = ?", rs -> {
-            if (rs.next()) {
-                declaracion.put("nombre", rs.getString("nombre"));
-                declaracion.put("documento", rs.getString("documento"));
-                declaracion.put("firma", rs.getString("firma_url"));
-                declaracion.put("fecha", formatDate(rs.getDate("fecha")));
-            }
+            declaracion.put("nombre", rs.getString("nombre"));
+            declaracion.put("documento", rs.getString("documento"));
+            declaracion.put("firma", rs.getString("firma_url"));
+            declaracion.put("fecha", formatDate(rs.getDate("fecha")));
         }, fichaId);
         data.put("declaracion", declaracion);
     }
@@ -684,8 +673,8 @@ public class FichaFormPersistenceService {
                     FormMapUtil.str(row.get("nombre")),
                     FormMapUtil.str(row.get("dosis")),
                     FormMapUtil.str(row.get("horarios")),
-                    FormMapUtil.str(row.get("soporteFormulaPdf")),
-                    FormMapUtil.str(row.get("soporteFormulaNombre")));
+                    "",
+                    "");
         }
     }
 
@@ -704,7 +693,25 @@ public class FichaFormPersistenceService {
                 },
                 fichaId);
         clinica.put("medicamentos", medicamentos);
+        mergeLegacyMedicamentoFormula(clinica);
         data.put("clinica", clinica);
+    }
+
+    /** Fichas antiguas guardaban el PDF en la primera fila de medicamentos. */
+    private void mergeLegacyMedicamentoFormula(Map<String, Object> clinica) {
+        if (FormMapUtil.hasText(clinica.get("soporteFormulaPdf"))) {
+            return;
+        }
+        for (Map<String, Object> row : FormMapUtil.asListOfMaps(clinica.get("medicamentos"))) {
+            if (!FormMapUtil.hasText(row.get("soporteFormulaPdf"))) {
+                continue;
+            }
+            clinica.put("soporteFormulaPdf", FormMapUtil.str(row.get("soporteFormulaPdf")));
+            clinica.put("soporteFormulaNombre", FormMapUtil.str(row.get("soporteFormulaNombre")));
+            row.put("soporteFormulaPdf", "");
+            row.put("soporteFormulaNombre", "");
+            return;
+        }
     }
 
     private void replaceOtrasSustancias(String fichaId, Map<String, Object> data) {
@@ -840,26 +847,24 @@ public class FichaFormPersistenceService {
         jdbc.query(
                 "SELECT id, tipo, fecha, favorable, justificacion FROM conceptos_aprobacion WHERE ficha_id = ?",
                 rs -> {
-                    while (rs.next()) {
-                        Map<String, Object> concepto = new LinkedHashMap<>();
-                        concepto.put("fecha", formatDate(rs.getDate("fecha")));
-                        concepto.put("favorable", rs.getString("favorable"));
-                        concepto.put("justificacion", rs.getString("justificacion"));
-                        long conceptoId = rs.getLong("id");
-                        List<String> firmas = jdbc.query(
-                                "SELECT firma_url FROM firmas_aprobacion WHERE concepto_id = ? ORDER BY orden",
-                                (frs, rowNum) -> frs.getString("firma_url"),
-                                conceptoId);
-                        concepto.put("firmas", firmas.isEmpty() ? List.of("") : firmas);
-                        String key = switch (rs.getString("tipo")) {
-                            case "institucional" -> "conceptoInstitucional";
-                            case "independiente" -> "aprobacionIndependiente";
-                            case "familia" -> "aprobacionFamilia";
-                            default -> null;
-                        };
-                        if (key != null) {
-                            data.put(key, concepto);
-                        }
+                    Map<String, Object> concepto = new LinkedHashMap<>();
+                    concepto.put("fecha", formatDate(rs.getDate("fecha")));
+                    concepto.put("favorable", rs.getString("favorable"));
+                    concepto.put("justificacion", rs.getString("justificacion"));
+                    long conceptoId = rs.getLong("id");
+                    List<String> firmas = jdbc.query(
+                            "SELECT firma_url FROM firmas_aprobacion WHERE concepto_id = ? ORDER BY orden",
+                            (frs, rowNum) -> frs.getString("firma_url"),
+                            conceptoId);
+                    concepto.put("firmas", firmas.isEmpty() ? List.of("") : firmas);
+                    String key = switch (rs.getString("tipo")) {
+                        case "institucional" -> "conceptoInstitucional";
+                        case "independiente" -> "aprobacionIndependiente";
+                        case "familia" -> "aprobacionFamilia";
+                        default -> null;
+                    };
+                    if (key != null) {
+                        data.put(key, concepto);
                     }
                 },
                 fichaId);
@@ -894,14 +899,12 @@ public class FichaFormPersistenceService {
         jdbc.query(
                 "SELECT escala, item_id, valor, puntaje FROM respuestas_escala WHERE ficha_id = ?",
                 rs -> {
-                    while (rs.next()) {
-                        String escala = rs.getString("escala");
-                        grouped.computeIfAbsent(escala, k -> new LinkedHashMap<>());
-                        String valor = rs.getString("valor");
-                        Integer puntaje = (Integer) rs.getObject("puntaje");
-                        Object parsed = parseScaleValue(valor, puntaje);
-                        grouped.get(escala).put(rs.getString("item_id"), parsed);
-                    }
+                    String escala = rs.getString("escala");
+                    grouped.computeIfAbsent(escala, k -> new LinkedHashMap<>());
+                    String valor = rs.getString("valor");
+                    Integer puntaje = (Integer) rs.getObject("puntaje");
+                    Object parsed = parseScaleValue(valor, puntaje);
+                    grouped.get(escala).put(rs.getString("item_id"), parsed);
                 },
                 fichaId);
         Map<String, Object> escalas = new LinkedHashMap<>();
@@ -937,26 +940,22 @@ public class FichaFormPersistenceService {
         jdbc.query(
                 "SELECT region, campo, valor FROM hallazgos_examen_fisico WHERE examen_fisico_id = ?",
                 rs -> {
-                    while (rs.next()) {
-                        String region = rs.getString("region");
-                        regions.computeIfAbsent(region, k -> new LinkedHashMap<>());
-                        regions.get(region).put(rs.getString("campo"), rs.getString("valor"));
-                    }
+                    String region = rs.getString("region");
+                    regions.computeIfAbsent(region, k -> new LinkedHashMap<>());
+                    regions.get(region).put(rs.getString("campo"), rs.getString("valor"));
                 },
                 fichaId);
         examenFisico.putAll(regions);
         Map<String, Object> incontinencia = new LinkedHashMap<>();
         jdbc.query("SELECT * FROM incontinencia WHERE examen_fisico_id = ?", rs -> {
-            if (rs.next()) {
-                incontinencia.put("presenta", rs.getString("presenta"));
-                incontinencia.put("momento", rs.getString("momento"));
-                incontinencia.put("lesiones", rs.getString("lesiones"));
-                incontinencia.put("ulceras", rs.getString("ulceras"));
-                incontinencia.put("hongos", rs.getString("hongos"));
-                incontinencia.put("secreciones", rs.getString("secreciones"));
-                incontinencia.put("prolapso", rs.getString("prolapso"));
-                incontinencia.put("presenciaSonda", rs.getString("presencia_sonda"));
-            }
+            incontinencia.put("presenta", rs.getString("presenta"));
+            incontinencia.put("momento", rs.getString("momento"));
+            incontinencia.put("lesiones", rs.getString("lesiones"));
+            incontinencia.put("ulceras", rs.getString("ulceras"));
+            incontinencia.put("hongos", rs.getString("hongos"));
+            incontinencia.put("secreciones", rs.getString("secreciones"));
+            incontinencia.put("prolapso", rs.getString("prolapso"));
+            incontinencia.put("presenciaSonda", rs.getString("presencia_sonda"));
         }, fichaId);
         examenFisico.put("incontinencia", incontinencia);
         data.put("examenFisico", examenFisico);
@@ -965,28 +964,104 @@ public class FichaFormPersistenceService {
     private void replaceValoresSistema(String fichaId, Map<String, Object> data) {
         jdbc.update("DELETE FROM valores_sistema WHERE revision_id = ?", fichaId);
         Map<String, Object> revision = FormMapUtil.asMap(data.get("revisionSistemas"));
-        for (Map.Entry<String, Object> entry : revision.entrySet()) {
-            String valor = FormMapUtil.str(entry.getValue());
-            if (valor == null) {
-                continue;
-            }
+        for (Map.Entry<String, String> entry : flattenRevisionSistemas(revision).entrySet()) {
             jdbc.update(
                     "INSERT INTO valores_sistema (revision_id, sistema, valor) VALUES (?,?,?)",
-                    fichaId, entry.getKey(), valor);
+                    fichaId, entry.getKey(), entry.getValue());
         }
+    }
+
+    private Map<String, String> flattenRevisionSistemas(Map<String, Object> revision) {
+        Map<String, String> out = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : revision.entrySet()) {
+            Object value = entry.getValue();
+            if (value instanceof Map<?, ?> nested) {
+                for (Map.Entry<?, ?> sub : nested.entrySet()) {
+                    String subVal = FormMapUtil.str(sub.getValue());
+                    if (subVal != null) {
+                        out.put(entry.getKey() + "." + sub.getKey(), subVal);
+                    }
+                }
+                continue;
+            }
+            String valor = FormMapUtil.str(value);
+            if (valor != null) {
+                out.put(entry.getKey(), valor);
+            }
+        }
+        return out;
     }
 
     private void loadRevisionSistemas(String fichaId, Map<String, Object> data) {
         Map<String, Object> revisionSistemas = new LinkedHashMap<>();
+        Map<String, Map<String, Object>> nestedGroups = new LinkedHashMap<>();
         jdbc.query(
                 "SELECT sistema, valor FROM valores_sistema WHERE revision_id = ?",
                 rs -> {
-                    while (rs.next()) {
-                        revisionSistemas.put(rs.getString("sistema"), rs.getString("valor"));
+                    String sistema = rs.getString("sistema");
+                    String valor = rs.getString("valor");
+                    if (sistema == null) {
+                        return;
+                    }
+                    int dot = sistema.indexOf('.');
+                    if (dot > 0) {
+                        String parent = sistema.substring(0, dot);
+                        String child = sistema.substring(dot + 1);
+                        nestedGroups
+                                .computeIfAbsent(parent, key -> new LinkedHashMap<>())
+                                .put(child, valor != null ? valor : "");
+                    } else {
+                        revisionSistemas.put(sistema, valor != null ? valor : "");
                     }
                 },
                 fichaId);
+        for (Map.Entry<String, Map<String, Object>> entry : nestedGroups.entrySet()) {
+            revisionSistemas.put(entry.getKey(), entry.getValue());
+        }
+        normalizeLegacyRespiratorio(revisionSistemas);
         data.put("revisionSistemas", revisionSistemas);
+    }
+
+    private void normalizeLegacyRespiratorio(Map<String, Object> revisionSistemas) {
+        Object resp = revisionSistemas.get("respiratorio");
+        if (!(resp instanceof String raw)) {
+            return;
+        }
+        String trimmed = raw.trim();
+        if (!trimmed.startsWith("{") || !trimmed.contains("=")) {
+            Map<String, Object> nested = new LinkedHashMap<>();
+            nested.put("sonoridad", trimmed);
+            nested.put("eupnea", "");
+            nested.put("bradipnea", "");
+            nested.put("taquipnea", "");
+            revisionSistemas.put("respiratorio", nested);
+            return;
+        }
+        revisionSistemas.put("respiratorio", parseJavaMapString(trimmed));
+    }
+
+    private Map<String, Object> parseJavaMapString(String raw) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        String inner = raw.trim();
+        if (inner.startsWith("{")) {
+            inner = inner.substring(1);
+        }
+        if (inner.endsWith("}")) {
+            inner = inner.substring(0, inner.length() - 1);
+        }
+        if (inner.isBlank()) {
+            return out;
+        }
+        for (String part : inner.split(",\\s*")) {
+            int eq = part.indexOf('=');
+            if (eq <= 0) {
+                continue;
+            }
+            String key = part.substring(0, eq).trim();
+            String val = part.substring(eq + 1).trim();
+            out.put(key, val);
+        }
+        return out;
     }
 
     private void replaceCamposExamenMental(String fichaId, Map<String, Object> data) {
@@ -1008,9 +1083,7 @@ public class FichaFormPersistenceService {
         jdbc.query(
                 "SELECT campo, valor FROM campos_examen_mental WHERE examen_mental_id = ?",
                 rs -> {
-                    while (rs.next()) {
-                        examenMental.put(rs.getString("campo"), rs.getString("valor"));
-                    }
+                    examenMental.put(rs.getString("campo"), rs.getString("valor"));
                 },
                 fichaId);
         data.put("examenMental", examenMental);

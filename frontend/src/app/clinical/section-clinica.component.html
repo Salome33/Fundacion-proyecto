@@ -25,7 +25,6 @@
             <th>Nombre</th>
             <th>Dosis</th>
             <th>Horarios</th>
-            <th>Soporte fórmula</th>
             <th></th>
           </tr>
         </thead>
@@ -36,14 +35,6 @@
               <td><input formControlName="dosis" /></td>
               <td><input formControlName="horarios" /></td>
               <td>
-                <app-pdf-attach
-                  formControlName="soporteFormulaPdf"
-                  [fileName]="$any(m).get('soporteFormulaNombre')?.value"
-                  (fileNameChange)="$any(m).patchValue({ soporteFormulaNombre: $event })"
-                  hint="Anexar PDF"
-                />
-              </td>
-              <td>
                 <button type="button" class="link-remove" (click)="formApi.removeMedicamento($index)">
                   Quitar
                 </button>
@@ -52,10 +43,19 @@
           }
         </tbody>
       </table>
-      <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
-        + Agregar medicamento
-      </button>
+      <div class="section-action-row">
+        <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
+          + Agregar medicamento
+        </button>
+      </div>
     }
+    <div class="pdf-attach-col">
+      <app-pdf-attach
+        formControlName="soporteFormulaPdf"
+        [fileName]="form.get('clinica.soporteFormulaNombre')?.value"
+        (fileNameChange)="form.get('clinica')?.patchValue({ soporteFormulaNombre: $event })"
+      />
+    </div>
   </section>
 
   <div formGroupName="autopercepcion" class="form-section-group">
@@ -86,16 +86,26 @@
   <section class="section-card" id="condicion-general">
     <h2>Condición general</h2>
     <div class="field-grid">
-      <label>Higiénico<input formControlName="higienico" /></label>
-      <label>Nutricional<input formControlName="nutricional" /></label>
-      <label>¿Ayuda para movilizarse?<input formControlName="ayudaMovilizarse" /></label>
-      <label>¿Necesita inmovilización?<input formControlName="inmovilizacion" /></label>
-      <label>¿Autoriza inmovilización?<input formControlName="autorizaInmovilizacion" /></label>
-      <label>¿Camina solo?<input formControlName="caminaSolo" /></label>
-      <label>¿Camina con bastón?<input formControlName="caminaBaston" /></label>
-      <label>¿Silla de ruedas?<input formControlName="sillaRuedas" /></label>
-      <label>MSS<input formControlName="mss" /></label>
-      <label>MII<input formControlName="mii" /></label>
+      <label class="field-full">Higiénico<input formControlName="higienico" /></label>
+      <label class="field-full">Nutricional<input formControlName="nutricional" /></label>
+      <label class="field-full"
+        >¿Necesita ayuda para movilizarse?<input formControlName="ayudaMovilizarse"
+      /></label>
+      <label class="field-full"
+        >¿El adulto mayor necesita ser inmovilizado?<input formControlName="inmovilizacion"
+      /></label>
+      <label class="field-full"
+        >¿Autoriza la inmovilización?<input formControlName="autorizaInmovilizacion"
+      /></label>
+      <label class="field-full">¿Camina solo?<input formControlName="caminaSolo" /></label>
+      <label class="field-full"
+        >¿Camina con ayuda de bastón?<input formControlName="caminaBaston"
+      /></label>
+      <label class="field-full"
+        >¿Movilización en silla de ruedas?<input formControlName="sillaRuedas"
+      /></label>
+      <label class="field-full">MSS<input formControlName="mss" /></label>
+      <label class="field-full">MII<input formControlName="mii" /></label>
     </div>
   </section>
   </div>

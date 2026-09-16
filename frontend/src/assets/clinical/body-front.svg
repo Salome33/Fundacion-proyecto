@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 300" role="img" aria-label="Silueta corporal frontal">
+  <rect width="120" height="300" fill="#f7f3eb"/>
+  <g fill="none" stroke="#8a7355" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="60" cy="28" rx="17" ry="20"/>
+    <path d="M43 48 C38 58 36 72 38 88 L36 108 C34 118 32 132 34 148 L32 168 C30 182 28 198 30 214 L28 238 C26 252 28 268 32 282"/>
+    <path d="M77 48 C82 58 84 72 82 88 L84 108 C86 118 88 132 86 148 L88 168 C90 182 92 198 90 214 L92 238 C94 252 92 268 88 282"/>
+    <path d="M38 88 L82 88"/>
+    <path d="M34 148 L86 148"/>
+    <path d="M30 214 L90 214"/>
+    <path d="M48 108 L48 168"/>
+    <path d="M72 108 L72 168"/>
+    <path d="M52 282 L52 296"/>
+    <path d="M68 282 L68 296"/>
+    <path d="M52 296 L68 296"/>
+  </g>
+</svg>

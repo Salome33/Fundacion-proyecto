@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { FUNDACION_CONTACT } from './fundacion-contact.config';
+import { IntakeStoreService } from './intake-store.service';
 
 @Component({
   selector: 'app-home-view',
@@ -28,6 +29,10 @@ import { FUNDACION_CONTACT } from './fundacion-contact.config';
               }
             </p>
           </header>
+
+          @if (flashMsg()) {
+            <p class="intake-form-toast" role="status">{{ flashMsg() }}</p>
+          }
 
           @if (auth.canEdit()) {
             <section class="clinical-section-card clinical-hub-cta">
@@ -89,7 +94,19 @@ import { FUNDACION_CONTACT } from './fundacion-contact.config';
     </div>
   `,
 })
-export class HomeViewComponent {
+export class HomeViewComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly contact = FUNDACION_CONTACT;
+  private readonly store = inject(IntakeStoreService);
+
+  flashMsg = signal('');
+
+  ngOnInit(): void {
+    const msg = this.store.homeFlashMsg();
+    if (msg) {
+      this.flashMsg.set(msg);
+      this.store.homeFlashMsg.set('');
+      setTimeout(() => this.flashMsg.set(''), 4000);
+    }
+  }
 }

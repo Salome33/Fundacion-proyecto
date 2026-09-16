@@ -1,28 +1,35 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ClinicalFormService } from './clinical-form.service';
 import { ScaleFormComponent } from './scale-form.component';
+import { TinettiScaleListComponent } from './tinetti-scale-list.component';
 import {
   GDS_INTRO,
   PFEIFFER_INTRO,
   TINETTI_BALANCE_INTRO,
   TINETTI_GAIT_INTRO,
 } from './data/form-format-texts';
+import { RESPIRATORIO_REVISION_FIELDS } from './data/exam-definitions';
 import {
   BARTHEL_SCALE,
   GDS_QUESTIONS,
+  gdsNoScore,
   interpretGds,
   interpretPfeiffer,
   LAWTON_SCALE,
   PFEIFFER_QUESTIONS,
   TINETTI_BALANCE,
+  TINETTI_BALANCE_MAX,
   TINETTI_GAIT,
+  TINETTI_GAIT_MAX,
+  TINETTI_TOTAL_MAX,
+  tinettiTotalFromItems,
 } from './data/scale-definitions';
 
 @Component({
   selector: 'app-section-examen',
   standalone: true,
-  imports: [ReactiveFormsModule, ScaleFormComponent],
+  imports: [ReactiveFormsModule, ScaleFormComponent, TinettiScaleListComponent],
   templateUrl: './section-examen.component.html',
 })
 export class SectionExamenComponent implements OnInit {
@@ -32,12 +39,17 @@ export class SectionExamenComponent implements OnInit {
   readonly lawton = LAWTON_SCALE;
   readonly tinettiBalance = TINETTI_BALANCE;
   readonly tinettiGait = TINETTI_GAIT;
+  readonly tinettiBalanceMax = TINETTI_BALANCE_MAX;
+  readonly tinettiGaitMax = TINETTI_GAIT_MAX;
+  readonly tinettiTotalMax = TINETTI_TOTAL_MAX;
   readonly pfeifferQ = PFEIFFER_QUESTIONS;
   readonly gdsQ = GDS_QUESTIONS;
+  readonly gdsNoScore = gdsNoScore;
   readonly tinettiBalanceIntro = TINETTI_BALANCE_INTRO;
   readonly tinettiGaitIntro = TINETTI_GAIT_INTRO;
   readonly gdsIntro = GDS_INTRO;
   readonly pfeifferIntro = PFEIFFER_INTRO;
+  readonly respiratorioRevisionFields = RESPIRATORIO_REVISION_FIELDS;
   interpretPfeiffer = interpretPfeiffer;
   interpretGds = interpretGds;
 
@@ -91,11 +103,11 @@ export class SectionExamenComponent implements OnInit {
   tinettiTotal(part: 'balance' | 'gait'): number {
     const items = part === 'balance' ? TINETTI_BALANCE : TINETTI_GAIT;
     const g = part === 'balance' ? this.tinettiBalanceGroup() : this.tinettiGaitGroup();
-    return items.reduce((s, it) => s + (Number(g.get(it.id)?.value) || 0), 0);
+    return tinettiTotalFromItems(items, (id) => g.get(id)?.value);
   }
 
-  setTinetti(part: 'balance' | 'gait', itemId: string, score: number): void {
+  setTinetti(part: 'balance' | 'gait', itemId: string, optionIndex: number): void {
     const g = part === 'balance' ? this.tinettiBalanceGroup() : this.tinettiGaitGroup();
-    g.get(itemId)?.setValue(score);
+    g.get(itemId)?.setValue(optionIndex);
   }
 }

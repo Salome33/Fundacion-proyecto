@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ScaleDef, ScaleItemDef } from './data/scale-definitions';
+import { ScaleDef, ScaleItemDef, tinettiResolveScore, tinettiSelectedOptionIndex } from './data/scale-definitions';
 
 @Component({
   selector: 'app-scale-form',
@@ -29,13 +29,16 @@ import { ScaleDef, ScaleItemDef } from './data/scale-definitions';
               />
             } @else {
               <div class="scale-question-options scale-question-options--stack">
-                @for (opt of item.options; track opt.label) {
-                  <label class="scale-question-option">
+                @for (opt of item.options; track opt.label; let oi = $index) {
+                  <label
+                    class="scale-question-option"
+                    [class.scale-question-option--selected]="selectedIndex(item) === oi"
+                  >
                     <input
                       type="radio"
                       [name]="scale.id + '_' + item.id"
-                      [checked]="group.get(item.id)?.value === opt.score"
-                      (change)="onPick(item.id, opt.score)"
+                      [checked]="selectedIndex(item) === oi"
+                      (change)="onPick(item.id, oi)"
                     />
                     <span class="scale-option-label">{{ opt.label }}</span>
                     <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
@@ -70,8 +73,12 @@ export class ScaleFormComponent implements OnInit {
     }
   }
 
-  onPick(itemId: string, score: number): void {
-    this.group.get(itemId)?.setValue(score);
+  onPick(itemId: string, optionIndex: number): void {
+    this.group.get(itemId)?.setValue(optionIndex);
+  }
+
+  selectedIndex(item: ScaleItemDef): number | null {
+    return tinettiSelectedOptionIndex(item, this.group.get(item.id)?.value);
   }
 
   useNumericInput(item: ScaleItemDef): boolean {
@@ -89,7 +96,7 @@ export class ScaleFormComponent implements OnInit {
 
   get total(): number {
     return this.scale.items.reduce(
-      (sum, it) => sum + (Number(this.group.get(it.id)?.value) || 0),
+      (sum, it) => sum + tinettiResolveScore(it, this.group.get(it.id)?.value),
       0,
     );
   }

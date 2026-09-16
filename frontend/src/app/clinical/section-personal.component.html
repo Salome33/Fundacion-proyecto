@@ -12,6 +12,14 @@
   <section class="section-card" formGroupName="personal">
     <h2>Información personal</h2>
     <div class="personal-with-photo">
+      <div class="photo-attach-col">
+        <app-photo-attach
+          formControlName="foto"
+          header="Anexar foto"
+          sizeHint="3,5 × 4,5 cm"
+          hint="Anexar foto del adulto mayor"
+        />
+      </div>
       <div class="field-grid">
         <label>Fecha de ingreso<input type="date" formControlName="fechaIngreso" /></label>
         <label>Fecha de actualización<input type="date" formControlName="fechaActualizacion" /></label>
@@ -43,14 +51,6 @@
         <label>Profesión<input formControlName="profesion" /></label>
         <label>Confesión religiosa<input formControlName="confesionReligiosa" /></label>
       </div>
-      <div class="photo-attach-col">
-        <app-photo-attach
-          formControlName="foto"
-          header="Anexar foto"
-          sizeHint="3,5 × 4,5 cm"
-          hint="Anexar foto del adulto mayor"
-        />
-      </div>
     </div>
   </section>
 
@@ -73,37 +73,36 @@
   <section class="section-card" formGroupName="familiar">
     <h2>Información familiar y social</h2>
     <div class="field-grid">
-      <label>Nombre de la madre<input formControlName="nombreMadre" /></label>
-      <label>Nombre del padre<input formControlName="nombrePadre" /></label>
+      <label class="field-full">Nombre del padre<input formControlName="nombrePadre" /></label>
+      <label class="field-full">Nombre de la madre<input formControlName="nombreMadre" /></label>
       <label class="field-full"
-        >¿Con quién vive actualmente?<input formControlName="conQuienVive"
+        >¿Con quién vive actualmente el adulto mayor?<input formControlName="conQuienVive"
       /></label>
       <label class="field-full"
-        >Principal cuidador<input formControlName="cuidadorPrincipal"
+        >¿Quién es el principal cuidador o responsable de su atención?<input
+          formControlName="cuidadorPrincipal"
       /></label>
       <label class="field-full"
-        >Familiares cercanos<input formControlName="familiaresCercanos"
-      /></label>
-      <label>Frecuencia de visitas<input formControlName="frecuenciaVisitas" /></label>
-      <label class="field-full"
-        >Relación con la familia<textarea formControlName="relacionFamilia"></textarea
-      ></label>
-      <label class="field-full"
-        >Persona para decisiones en emergencia<input formControlName="decisionEmergencia"
+        >¿Cuenta con familiares cercanos? ¿Quiénes son?<input formControlName="familiaresCercanos"
       /></label>
       <label class="field-full"
-        >Actividades sociales<textarea formControlName="actividadesSociales"></textarea
-      ></label>
-      <label class="field-full"
-        >Antecedentes abandono / maltrato<textarea
-          formControlName="antecedentesMaltrato"
+        >¿Cómo es la relación el adulto mayor con su familia?<textarea
+          formControlName="relacionFamilia"
         ></textarea
       ></label>
       <label class="field-full"
-        >Expectativas de la familia<textarea formControlName="expectativas"></textarea
+        >¿Existe alguna persona responsable de tomar decisiones en caso de emergencia?<input
+          formControlName="decisionEmergencia"
+      /></label>
+      <label class="field-full"
+        >¿El adulto mayor participa de actividades sociales, comunitarias o religiosas?<textarea
+          formControlName="actividadesSociales"
+        ></textarea
       ></label>
       <label class="field-full"
-        >Razón principal del ingreso<textarea formControlName="razonIngreso"></textarea
+        >¿Presenta antecedentes de abandono, maltrato o negligencia?<textarea
+          formControlName="antecedentesMaltrato"
+        ></textarea
       ></label>
     </div>
   </section>
@@ -137,6 +136,20 @@
         + Agregar otro hijo
       </button>
     }
+    <div formGroupName="familiar" class="field-grid hijos-extra-questions">
+      <label class="field-full"
+        >¿Qué expectativas tiene la familia o el adulto mayor respecto a la atención que recibirá?<textarea
+          formControlName="expectativas"
+          rows="3"
+        ></textarea
+      ></label>
+      <label class="field-full"
+        >¿Cuál es la razón principal por la que solicita el ingreso a la institución?<textarea
+          formControlName="razonIngreso"
+          rows="3"
+        ></textarea
+      ></label>
+    </div>
   </section>
 
   <section class="section-card">
@@ -200,15 +213,6 @@
               }
             </div>
             <div class="acudiente-with-photo">
-              <div class="field-grid">
-                <label>Nombre<input formControlName="nombre" /></label>
-                <label>Identificación<input formControlName="identificacion" /></label>
-                <label>Contacto<input formControlName="contacto" /></label>
-                <label>Correo<input formControlName="email" /></label>
-                <label class="field-full">Dirección<input formControlName="direccion" /></label>
-                <label>Ingresos dependen de<input formControlName="ingresosDependen" /></label>
-                <label>Parentesco<input formControlName="parentesco" /></label>
-              </div>
               <div class="photo-attach-col">
                 <app-photo-attach
                   formControlName="foto"
@@ -216,6 +220,17 @@
                   sizeHint="3,5 × 4,5 cm"
                   hint="Anexar foto de acudiente"
                 />
+              </div>
+              <div class="field-grid">
+                <label>Nombre<input formControlName="nombre" /></label>
+                <label>Identificación<input formControlName="identificacion" /></label>
+                <label>Contacto<input formControlName="contacto" /></label>
+                <label>Correo<input formControlName="email" /></label>
+                <label class="field-full">Dirección<input formControlName="direccion" /></label>
+                <label class="field-full"
+                  >Los ingresos económicos dependen de:<input formControlName="ingresosDependen"
+                /></label>
+                <label>Parentesco<input formControlName="parentesco" /></label>
               </div>
             </div>
           </div>

@@ -47,7 +47,7 @@ const SHIFTS: VitalsShift[] = ['manana', 'mediodia', 'tarde'];
                 </p>
               </div>
               @if (auth.canEdit()) {
-                <button type="button" class="btn btn-secondary btn-gold--xl" (click)="addDialogOpen.set(true)">
+                <button type="button" class="btn btn-secondary btn-gold--xl" (click)="openAddDialog()">
                   + Registrar signos vitales
                 </button>
               }
@@ -171,6 +171,7 @@ const SHIFTS: VitalsShift[] = ['manana', 'mediodia', 'tarde'];
                       [(ngModel)]="fechaRegistro"
                       name="fechaRegistro"
                       type="date"
+                      class="input-datetime-hint"
                       (ngModelChange)="loadShiftReadings()"
                     />
                   </label>
@@ -251,7 +252,7 @@ export class DailyVitalsPanelComponent {
 
   formNombre = '';
   formDocumento = '';
-  fechaRegistro = this.todayIso();
+  fechaRegistro = '';
   saveError = signal('');
   savedMessage = signal<VitalsShift | ''>('');
 
@@ -287,6 +288,13 @@ export class DailyVitalsPanelComponent {
   clearFilter(): void {
     this.filterNombre = '';
     this.filterDocumento = '';
+  }
+
+  openAddDialog(): void {
+    this.fechaRegistro = '';
+    this.resetReadings();
+    this.saveError.set('');
+    this.addDialogOpen.set(true);
   }
 
   closeAddDialog(): void {
@@ -356,11 +364,6 @@ export class DailyVitalsPanelComponent {
     for (const turno of SHIFTS) {
       this.readings[turno] = { ta: '', fc: '', fr: '', spo2: '' };
     }
-  }
-
-  private todayIso(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   private displayDateFromInput(iso: string): string {

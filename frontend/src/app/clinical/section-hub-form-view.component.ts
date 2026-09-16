@@ -3,12 +3,16 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   BARTHEL_SCALE,
   GDS_QUESTIONS,
+  gdsNoScore,
   interpretGds,
   interpretPfeiffer,
   LAWTON_SCALE,
   PFEIFFER_QUESTIONS,
   TINETTI_BALANCE,
+  TINETTI_BALANCE_MAX,
   TINETTI_GAIT,
+  TINETTI_GAIT_MAX,
+  tinettiTotalFromItems,
 } from './data/scale-definitions';
 import {
   DECLARACION_TEXTO,
@@ -22,12 +26,13 @@ import {
 import { ClinicalFormService } from './clinical-form.service';
 import { sectionEditFields } from './section-edit-fields';
 import { ScaleFormComponent } from './scale-form.component';
+import { TinettiScaleListComponent } from './tinetti-scale-list.component';
 import { controlByPath } from './form-control-path';
 
 @Component({
   selector: 'app-section-hub-form-view',
   standalone: true,
-  imports: [ReactiveFormsModule, ScaleFormComponent],
+  imports: [ReactiveFormsModule, ScaleFormComponent, TinettiScaleListComponent],
   template: `
     <div class="section-hub-form-view intake-readonly" [formGroup]="form">
       @if (section() === 'vgi') {
@@ -47,61 +52,27 @@ import { controlByPath } from './form-control-path';
           }
           @if (section() === 'escala-tinetti-equilibrio') {
             <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
-            <div [formGroup]="tinettiBalanceGroup">
-              <ul class="scale-question-list">
-                @for (item of tinettiBalance; track item.id) {
-                  <li class="scale-question-item scale-question-item--tinetti">
-                    <p class="scale-question-text">{{ item.label }}</p>
-                    <div class="scale-question-options scale-question-options--stack">
-                      @for (opt of item.options; track opt.label) {
-                        <label class="scale-question-option">
-                          <input
-                            type="radio"
-                            [name]="'hub_tb_' + item.id"
-                            [checked]="tinettiBalanceGroup.get(item.id)?.value === opt.score"
-                            disabled
-                          />
-                          <span class="scale-option-label">{{ opt.label }}</span>
-                          <span class="scale-option-score">{{ opt.score }}</span>
-                        </label>
-                      }
-                    </div>
-                  </li>
-                }
-              </ul>
-              <p class="scale-total">
-                <strong>Total equilibrio: {{ tinettiTotal('balance') }} / 15</strong>
-              </p>
-            </div>
+            <app-tinetti-scale-list
+              [items]="tinettiBalance"
+              [group]="tinettiBalanceGroup"
+              namePrefix="hub_tb"
+              [readonly]="true"
+            />
+            <p class="scale-total">
+              <strong>Total equilibrio: {{ tinettiTotal('balance') }} / {{ tinettiBalanceMax }}</strong>
+            </p>
           }
           @if (section() === 'escala-tinetti-marcha') {
             <p class="scale-sub">{{ tinettiGaitIntro }}</p>
-            <div [formGroup]="tinettiGaitGroup">
-              <ul class="scale-question-list">
-                @for (item of tinettiGait; track item.id) {
-                  <li class="scale-question-item scale-question-item--tinetti">
-                    <p class="scale-question-text">{{ item.label }}</p>
-                    <div class="scale-question-options scale-question-options--stack">
-                      @for (opt of item.options; track opt.label) {
-                        <label class="scale-question-option">
-                          <input
-                            type="radio"
-                            [name]="'hub_tg_' + item.id"
-                            [checked]="tinettiGaitGroup.get(item.id)?.value === opt.score"
-                            disabled
-                          />
-                          <span class="scale-option-label">{{ opt.label }}</span>
-                          <span class="scale-option-score">{{ opt.score }}</span>
-                        </label>
-                      }
-                    </div>
-                  </li>
-                }
-              </ul>
-              <p class="scale-total">
-                <strong>Total marcha: {{ tinettiTotal('gait') }} / 12</strong>
-              </p>
-            </div>
+            <app-tinetti-scale-list
+              [items]="tinettiGait"
+              [group]="tinettiGaitGroup"
+              namePrefix="hub_tg"
+              [readonly]="true"
+            />
+            <p class="scale-total">
+              <strong>Total marcha: {{ tinettiTotal('gait') }} / {{ tinettiGaitMax }}</strong>
+            </p>
           }
           @if (section() === 'escala-pfeiffer') {
             <p class="scale-sub">{{ pfeifferIntro }}</p>
@@ -118,6 +89,12 @@ import { controlByPath } from './form-control-path';
                         }
                       </span>
                     </label>
+                    <input
+                      class="scale-pfeiffer-response"
+                      type="text"
+                      [formControlName]="q.id + 'Respuesta'"
+                      [attr.aria-label]="'Respuesta del adulto mayor: ' + q.label"
+                    />
                   </li>
                 }
               </ul>
@@ -138,10 +115,18 @@ import { controlByPath } from './form-control-path';
                     }
                     <div class="scale-question-options scale-question-options--stack">
                       <label class="scale-question-option">
-                        <input type="radio" [formControlName]="q.id" value="si" /> Sí
+                        <input type="radio" [formControlName]="q.id" value="si" />
+                        <span class="scale-option-label">Sí</span>
+                        <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + q.yesScore">{{
+                          q.yesScore
+                        }}</span>
                       </label>
                       <label class="scale-question-option">
-                        <input type="radio" [formControlName]="q.id" value="no" /> No
+                        <input type="radio" [formControlName]="q.id" value="no" />
+                        <span class="scale-option-label">No</span>
+                        <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + gdsNoScore(q.yesScore)">{{
+                          gdsNoScore(q.yesScore)
+                        }}</span>
                       </label>
                     </div>
                   </li>
@@ -223,8 +208,11 @@ export class SectionHubFormViewComponent implements OnInit {
   readonly lawton = LAWTON_SCALE;
   readonly tinettiBalance = TINETTI_BALANCE;
   readonly tinettiGait = TINETTI_GAIT;
+  readonly tinettiBalanceMax = TINETTI_BALANCE_MAX;
+  readonly tinettiGaitMax = TINETTI_GAIT_MAX;
   readonly pfeifferQ = PFEIFFER_QUESTIONS;
   readonly gdsQ = GDS_QUESTIONS;
+  readonly gdsNoScore = gdsNoScore;
   readonly tinettiBalanceIntro = TINETTI_BALANCE_INTRO;
   readonly tinettiGaitIntro = TINETTI_GAIT_INTRO;
   readonly pfeifferIntro = PFEIFFER_INTRO;
@@ -312,7 +300,7 @@ export class SectionHubFormViewComponent implements OnInit {
   tinettiTotal(part: 'balance' | 'gait'): number {
     const items = part === 'balance' ? TINETTI_BALANCE : TINETTI_GAIT;
     const g = part === 'balance' ? this.tinettiBalanceGroup : this.tinettiGaitGroup;
-    return items.reduce((sum, it) => sum + (Number(g.get(it.id)?.value) || 0), 0);
+    return tinettiTotalFromItems(items, (id) => g.get(id)?.value);
   }
 
   pfeifferErrors(): number {

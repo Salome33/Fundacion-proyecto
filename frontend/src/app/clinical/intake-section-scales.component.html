@@ -1,76 +1,42 @@
 <div [formGroup]="form">
+  <label class="field-full section-card"
+    >Observaciones<textarea formControlName="escalasObservaciones" rows="3"></textarea
+  ></label>
   <div formGroupName="escalas" class="section-card">
-    <label class="field-full"
-      >Observaciones<textarea formControlName="escalasObservaciones" rows="3"></textarea
-    ></label>
     <app-scale-form [scale]="barthel" [group]="$any(escalasGroup.get('barthel'))" />
     <app-scale-form [scale]="lawton" [group]="$any(escalasGroup.get('lawton'))" />
 
     <div class="scale-block">
       <h3>Tinetti — Equilibrio</h3>
       <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
-      <div [formGroup]="tinettiBalanceGroup()">
-        <ul class="scale-question-list">
-          @for (item of tinettiBalance; track item.id) {
-            <li class="scale-question-item scale-question-item--tinetti">
-              <p class="scale-question-text">{{ item.label }}</p>
-              <div class="scale-question-options scale-question-options--stack">
-                @for (opt of item.options; track opt.label) {
-                  <label class="scale-question-option">
-                    <input
-                      type="radio"
-                      [name]="'tb_' + item.id"
-                      [checked]="tinettiBalanceGroup().get(item.id)?.value === opt.score"
-                      (change)="setTinetti('balance', item.id, opt.score)"
-                    />
-                    <span class="scale-option-label">{{ opt.label }}</span>
-                    <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
-                      opt.score
-                    }}</span>
-                  </label>
-                }
-              </div>
-            </li>
-          }
-        </ul>
-        <p class="scale-total"><strong>Total equilibrio: {{ tinettiTotal('balance') }} / 15</strong></p>
-      </div>
+      <app-tinetti-scale-list
+        [items]="tinettiBalance"
+        [group]="tinettiBalanceGroup()"
+        namePrefix="tb"
+        [useChangeHandler]="true"
+        (scorePick)="setTinetti('balance', $event.itemId, $event.optionIndex)"
+      />
+      <p class="scale-total">
+        <strong>Total equilibrio: {{ tinettiTotal('balance') }} / {{ tinettiBalanceMax }}</strong>
+      </p>
     </div>
 
     <div class="scale-block">
       <h3>Tinetti — Marcha</h3>
       <p class="scale-sub">{{ tinettiGaitIntro }}</p>
-      <div [formGroup]="tinettiGaitGroup()">
-        <ul class="scale-question-list">
-          @for (item of tinettiGait; track item.id) {
-            <li class="scale-question-item scale-question-item--tinetti">
-              <p class="scale-question-text">{{ item.label }}</p>
-              <div class="scale-question-options scale-question-options--stack">
-                @for (opt of item.options; track opt.label) {
-                  <label class="scale-question-option">
-                    <input
-                      type="radio"
-                      [name]="'tg_' + item.id"
-                      [checked]="tinettiGaitGroup().get(item.id)?.value === opt.score"
-                      (change)="setTinetti('gait', item.id, opt.score)"
-                    />
-                    <span class="scale-option-label">{{ opt.label }}</span>
-                    <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
-                      opt.score
-                    }}</span>
-                  </label>
-                }
-              </div>
-            </li>
-          }
-        </ul>
-        <p class="scale-total">
-          <strong
-            >Marcha: {{ tinettiTotal('gait') }} / 12 · Total:
-            {{ tinettiTotal('balance') + tinettiTotal('gait') }} / 27</strong
-          >
-        </p>
-      </div>
+      <app-tinetti-scale-list
+        [items]="tinettiGait"
+        [group]="tinettiGaitGroup()"
+        namePrefix="tg"
+        [useChangeHandler]="true"
+        (scorePick)="setTinetti('gait', $event.itemId, $event.optionIndex)"
+      />
+      <p class="scale-total">
+        <strong
+          >Marcha: {{ tinettiTotal('gait') }} / {{ tinettiGaitMax }} · Total:
+          {{ tinettiTotal('balance') + tinettiTotal('gait') }} / {{ tinettiTotalMax }}</strong
+        >
+      </p>
     </div>
 
     <div class="scale-block">
@@ -89,6 +55,12 @@
                   }
                 </span>
               </label>
+              <input
+                class="scale-pfeiffer-response"
+                type="text"
+                [formControlName]="q.id + 'Respuesta'"
+                [attr.aria-label]="'Respuesta del adulto mayor: ' + q.label"
+              />
             </li>
           }
         </ul>
@@ -106,14 +78,24 @@
           @for (q of gdsQ; track q.id) {
             <li class="scale-question-item scale-question-item--gds">
               <p class="scale-question-text">{{ q.label }}</p>
-              <p class="scale-question-detail">{{ q.detail }}</p>
+              @if (q.detail) {
+                <p class="scale-question-detail">{{ q.detail }}</p>
+              }
               <div class="scale-question-options scale-question-options--stack">
-                <label class="scale-question-option"
-                  ><input type="radio" [formControlName]="q.id" value="si" /> Sí</label
-                >
-                <label class="scale-question-option"
-                  ><input type="radio" [formControlName]="q.id" value="no" /> No</label
-                >
+                <label class="scale-question-option">
+                  <input type="radio" [formControlName]="q.id" value="si" />
+                  <span class="scale-option-label">Sí</span>
+                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + q.yesScore">{{
+                    q.yesScore
+                  }}</span>
+                </label>
+                <label class="scale-question-option">
+                  <input type="radio" [formControlName]="q.id" value="no" />
+                  <span class="scale-option-label">No</span>
+                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + gdsNoScore(q.yesScore)">{{
+                    gdsNoScore(q.yesScore)
+                  }}</span>
+                </label>
               </div>
             </li>
           }

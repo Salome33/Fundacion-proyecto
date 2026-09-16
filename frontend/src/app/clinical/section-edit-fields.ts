@@ -3,6 +3,7 @@ import {
   EXAMEN_FISICO_REGIONS,
   EXAMEN_MENTAL_FIELDS,
   INCONTINENCIA_CHECK_ITEMS,
+  RESPIRATORIO_REVISION_FIELDS,
   VALOR_FR_EN_UN_MINUTO,
 } from './data/exam-definitions';
 
@@ -77,6 +78,14 @@ function pushExamenFisico(fields: SectionEditField[]): void {
       'textarea',
     );
   }
+  for (const field of RESPIRATORIO_REVISION_FIELDS) {
+    pushScalar(
+      fields,
+      `Revisión por sistemas — Respiratorio — ${field.label}`,
+      `revisionSistemas.respiratorio.${field.id}`,
+      'textarea',
+    );
+  }
 }
 
 function pushRevisionSistemas(fields: SectionEditField[]): void {
@@ -144,18 +153,39 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
       break;
     case 'familiar':
       pushGroup(fields, 'familiar', [
-        { key: 'nombreMadre', label: 'Nombre madre' },
-        { key: 'nombrePadre', label: 'Nombre padre' },
-        { key: 'conQuienVive', label: 'Convive con' },
-        { key: 'cuidadorPrincipal', label: 'Cuidador principal' },
-        { key: 'familiaresCercanos', label: 'Familiares cercanos' },
-        { key: 'frecuenciaVisitas', label: 'Frecuencia de visitas' },
-        { key: 'relacionFamilia', label: 'Relación con la familia', inputType: 'textarea' },
-        { key: 'decisionEmergencia', label: 'Persona para decisiones en emergencia' },
-        { key: 'actividadesSociales', label: 'Actividades sociales / comunitarias / religiosas', inputType: 'textarea' },
-        { key: 'antecedentesMaltrato', label: 'Antecedentes abandono / maltrato', inputType: 'textarea' },
-        { key: 'expectativas', label: 'Expectativas de la familia', inputType: 'textarea' },
-        { key: 'razonIngreso', label: 'Razón principal del ingreso', inputType: 'textarea' },
+        { key: 'nombrePadre', label: 'Nombre del padre' },
+        { key: 'nombreMadre', label: 'Nombre de la madre' },
+        {
+          key: 'conQuienVive',
+          label: '¿Con quién vive actualmente el adulto mayor?',
+        },
+        {
+          key: 'cuidadorPrincipal',
+          label: '¿Quién es el principal cuidador o responsable de su atención?',
+        },
+        {
+          key: 'familiaresCercanos',
+          label: '¿Cuenta con familiares cercanos? ¿Quiénes son?',
+        },
+        {
+          key: 'relacionFamilia',
+          label: '¿Cómo es la relación el adulto mayor con su familia?',
+          inputType: 'textarea',
+        },
+        {
+          key: 'decisionEmergencia',
+          label: '¿Existe alguna persona responsable de tomar decisiones en caso de emergencia?',
+        },
+        {
+          key: 'actividadesSociales',
+          label: '¿El adulto mayor participa de actividades sociales, comunitarias o religiosas?',
+          inputType: 'textarea',
+        },
+        {
+          key: 'antecedentesMaltrato',
+          label: '¿Presenta antecedentes de abandono, maltrato o negligencia?',
+          inputType: 'textarea',
+        },
       ]);
       break;
     case 'hijos':
@@ -163,6 +193,19 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
         { key: 'nombre', label: 'Nombre y apellidos' },
         { key: 'contacto', label: 'Contacto' },
         { key: 'email', label: 'Correo electrónico' },
+      ]);
+      pushGroup(fields, 'familiar', [
+        {
+          key: 'expectativas',
+          label:
+            '¿Qué expectativas tiene la familia o el adulto mayor respecto a la atención que recibirá?',
+          inputType: 'textarea',
+        },
+        {
+          key: 'razonIngreso',
+          label: '¿Cuál es la razón principal por la que solicita el ingreso a la institución?',
+          inputType: 'textarea',
+        },
       ]);
       break;
     case 'referencias':
@@ -179,7 +222,7 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
         { key: 'contacto', label: 'Contacto' },
         { key: 'email', label: 'Correo' },
         { key: 'direccion', label: 'Dirección' },
-        { key: 'ingresosDependen', label: 'Ingresos dependen de' },
+        { key: 'ingresosDependen', label: 'Los ingresos económicos dependen de:' },
         { key: 'parentesco', label: 'Parentesco' },
         { key: 'foto', label: 'Foto', inputType: 'photo' },
       ]);
@@ -200,7 +243,7 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
         { key: 'contacto', label: 'Contacto' },
         { key: 'email', label: 'Correo' },
         { key: 'direccion', label: 'Dirección' },
-        { key: 'ingresosDependen', label: 'Ingresos dependen de' },
+        { key: 'ingresosDependen', label: 'Los ingresos económicos dependen de:' },
         { key: 'parentesco', label: 'Parentesco' },
         { key: 'foto', label: 'Foto', inputType: 'photo' },
       ]);
@@ -225,8 +268,13 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
           { key: 'nombre', label: 'Nombre' },
           { key: 'dosis', label: 'Dosis' },
           { key: 'horarios', label: 'Horarios' },
-          { key: 'soporteFormulaPdf', label: 'Soporte fórmula médica (PDF)', inputType: 'pdf' },
         ],
+      );
+      pushScalar(
+        fields,
+        'Soporte fórmula médica (PDF)',
+        'clinica.soporteFormulaPdf',
+        'pdf',
       );
       break;
     case 'alergias':
@@ -244,8 +292,13 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
           { key: 'nombre', label: 'Nombre' },
           { key: 'dosis', label: 'Dosis' },
           { key: 'horarios', label: 'Horarios' },
-          { key: 'soporteFormulaPdf', label: 'Soporte fórmula médica (PDF)', inputType: 'pdf' },
         ],
+      );
+      pushScalar(
+        fields,
+        'Soporte fórmula médica (PDF)',
+        'clinica.soporteFormulaPdf',
+        'pdf',
       );
       break;
     case 'autopercepcion':
@@ -263,10 +316,10 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
         { key: 'higienico', label: 'Higiénico' },
         { key: 'nutricional', label: 'Nutricional' },
         { key: 'ayudaMovilizarse', label: '¿Necesita ayuda para movilizarse?' },
-        { key: 'inmovilizacion', label: '¿Necesita inmovilización?' },
-        { key: 'autorizaInmovilizacion', label: '¿Autoriza inmovilización?' },
+        { key: 'inmovilizacion', label: '¿El adulto mayor necesita ser inmovilizado?' },
+        { key: 'autorizaInmovilizacion', label: '¿Autoriza la inmovilización?' },
         { key: 'caminaSolo', label: '¿Camina solo?' },
-        { key: 'caminaBaston', label: '¿Camina con bastón?' },
+        { key: 'caminaBaston', label: '¿Camina con ayuda de bastón?' },
         { key: 'sillaRuedas', label: '¿Movilización en silla de ruedas?' },
         { key: 'mss', label: 'MSS' },
         { key: 'mii', label: 'MII' },
@@ -353,7 +406,7 @@ export function sectionEditFields(form: FormGroup, sectionId: string): SectionEd
         { key: 'spo2', label: 'SpO2' },
         { key: 'peso', label: 'Peso (kg)' },
         { key: 'talla', label: 'Talla (cm)' },
-        { key: 'imc', label: 'IMC' },
+        { key: 'imc', label: 'IM' },
       ]);
       break;
     case 'cuerpo-grafico':

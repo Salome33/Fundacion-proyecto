@@ -17,7 +17,11 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets"],
-            "styles": ["src/styles.css", "src/app/clinical/clinical-theme.css"]
+            "styles": [
+              "src/styles.css",
+              "src/app/clinical/clinical-theme.css",
+              "src/clinical-print-overrides.css"
+            ]
           },
           "configurations": {
             "production": {

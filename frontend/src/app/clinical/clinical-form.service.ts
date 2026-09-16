@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
+  BARTHEL_SCALE,
   GDS_QUESTIONS,
+  LAWTON_SCALE,
   PFEIFFER_QUESTIONS,
   TINETTI_BALANCE,
   TINETTI_GAIT,
@@ -12,6 +14,7 @@ import {
   INCONTINENCIA_CHECK_ITEMS,
   FR_CONDICION_FIELDS,
   REVISION_SISTEMAS_OTROS,
+  RESPIRATORIO_REVISION_FIELDS,
   VALOR_FR_EN_UN_MINUTO,
 } from './data/exam-definitions';
 
@@ -27,28 +30,47 @@ const ACUDIENTE_ROW_KEYS = [
   'parentesco',
   'foto',
 ] as const;
-const MEDICAMENTO_ROW_KEYS = [
-  'nombre',
-  'dosis',
-  'horarios',
-  'soporteFormulaPdf',
-  'soporteFormulaNombre',
-] as const;
+const MEDICAMENTO_ROW_KEYS = ['nombre', 'dosis', 'horarios'] as const;
 const ESPECIALISTA_ROW_KEYS = ['especialidad', 'frecuencia', 'tratamiento'] as const;
 const PROFESIONAL_ROW_KEYS = ['nombre', 'cargo', 'documento', 'fecha', 'firma'] as const;
 const SUSTANCIA_ROW_KEYS = ['nombre', 'frecuencia'] as const;
+
+function isNullishString(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  return trimmed === '' || trimmed === 'null' || trimmed === 'undefined';
+}
 
 function isBlankField(value: unknown): boolean {
   if (value === null || value === undefined) {
     return true;
   }
   if (typeof value === 'string') {
-    return value.trim() === '';
+    return isNullishString(value);
   }
   if (typeof value === 'boolean' || typeof value === 'number') {
     return false;
   }
   return false;
+}
+
+function sanitizeNullishValue(value: unknown): unknown {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return isNullishString(value) ? '' : value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeNullishValue);
+  }
+  if (typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = sanitizeNullishValue(child);
+    }
+    return out;
+  }
+  return value;
 }
 
 function rowHasContent(row: unknown, keys: readonly string[]): boolean {
@@ -126,6 +148,8 @@ export class ClinicalFormService {
         alergiasMed: [''],
         alergiasAlim: [''],
         alergiasOtros: [''],
+        soporteFormulaPdf: [''],
+        soporteFormulaNombre: [''],
         medicamentos: this.fb.array([]),
       }),
       autopercepcion: this.fb.group({
@@ -175,6 +199,8 @@ export class ClinicalFormService {
         imc: [''],
       }),
       bodyPaintImage: [''],
+      bodyPrintFrontImage: [''],
+      bodyPrintBackImage: [''],
       descripcionCuerpoObservaciones: [''],
       escalasObservaciones: [''],
       escalas: this.fb.group({
@@ -212,7 +238,6 @@ export class ClinicalFormService {
       profesionales: this.fb.array([]),
     });
 
-    this.signosVitales.valueChanges.subscribe(() => this.recalcImc());
     this.initEscalasIfNeeded();
     this.setupIncontinenciaListeners();
   }
@@ -227,7 +252,13 @@ export class ClinicalFormService {
   }
 
   private buildRevisionSistemasGroup(): FormGroup {
-    const fields: Record<string, ReturnType<FormBuilder['control']>> = {};
+    const respiratorio: Record<string, ReturnType<FormBuilder['control']>> = {};
+    for (const field of RESPIRATORIO_REVISION_FIELDS) {
+      respiratorio[field.id] = this.fb.control('');
+    }
+    const fields: Record<string, ReturnType<FormBuilder['control']> | FormGroup> = {
+      respiratorio: this.fb.group(respiratorio),
+    };
     for (const item of VALOR_FR_EN_UN_MINUTO) {
       fields[item.id] = this.fb.control('');
     }
@@ -280,10 +311,22 @@ export class ClinicalFormService {
       if (!pfeiffer.contains(q.id)) {
         pfeiffer.addControl(q.id, this.fb.control<boolean | null>(null));
       }
+      const respKey = `${q.id}Respuesta`;
+      if (!pfeiffer.contains(respKey)) {
+        pfeiffer.addControl(respKey, this.fb.control(''));
+      }
     }
     for (const q of GDS_QUESTIONS) {
       if (!gds.contains(q.id)) {
         gds.addControl(q.id, this.fb.control<'si' | 'no' | null>(null));
+      }
+    }
+    for (const scale of [BARTHEL_SCALE, LAWTON_SCALE]) {
+      const g = escalas.get(scale.id) as FormGroup;
+      for (const it of scale.items) {
+        if (!g.contains(it.id)) {
+          g.addControl(it.id, this.fb.control<number | null>(null));
+        }
       }
     }
     for (const items of [TINETTI_BALANCE, TINETTI_GAIT]) {
@@ -415,7 +458,7 @@ export class ClinicalFormService {
     );
     sanitized['riesgoSalud'] = riesgoSalud;
 
-    return sanitized;
+    return sanitizeNullishValue(sanitized) as Record<string, unknown>;
   }
 
   private pruneFormArray(arr: FormArray, keys: readonly string[]): void {
@@ -488,35 +531,37 @@ export class ClinicalFormService {
 
   loadFromRecord(data: Record<string, unknown>): void {
     this.clearFormForLoad();
-    this.migrateLegacyFields(data);
+    const clean = sanitizeNullishValue(data) as Record<string, unknown>;
+    this.migrateLegacyFields(clean);
+    this.migrateLegacyMedicamentoFormula(clean);
 
-    this.loadFormArrayRows(() => this.addHijo(), this.hijos, data['hijos'], HIJO_ROW_KEYS);
+    this.loadFormArrayRows(() => this.addHijo(), this.hijos, clean['hijos'], HIJO_ROW_KEYS);
     this.loadFormArrayRows(
       () => this.addReferencia(),
       this.referencias,
-      data['referencias'],
+      clean['referencias'],
       REFERENCIA_ROW_KEYS,
     );
     this.loadFormArrayRows(
       () => this.addAcudiente(),
       this.acudientes,
-      data['acudientes'],
+      clean['acudientes'],
       ACUDIENTE_ROW_KEYS,
     );
     this.loadFormArrayRows(
       () => this.addMedicamento(),
       this.medicamentos,
-      (data['clinica'] as Record<string, unknown> | undefined)?.['medicamentos'],
+      (clean['clinica'] as Record<string, unknown> | undefined)?.['medicamentos'],
       MEDICAMENTO_ROW_KEYS,
     );
     this.loadFormArrayRows(
       () => this.addEspecialista(),
       this.form.get('especialistas') as FormArray,
-      data['especialistas'],
+      clean['especialistas'],
       ESPECIALISTA_ROW_KEYS,
     );
 
-    const profData = data['profesionales'];
+    const profData = clean['profesionales'];
     if (Array.isArray(profData)) {
       this.loadFormArrayRows(() => this.addProfesional(), this.profesionales, profData, PROFESIONAL_ROW_KEYS);
     } else if (profData && typeof profData === 'object' && rowHasContent(profData, PROFESIONAL_ROW_KEYS)) {
@@ -524,19 +569,20 @@ export class ClinicalFormService {
       this.profesionales.at(0).patchValue(profData as object);
     }
 
-    const riesgo = data['riesgoSalud'];
+    const riesgo = clean['riesgoSalud'];
     if (Array.isArray(riesgo)) {
       this.migrateLegacyRiesgo(riesgo as { detalle?: string; frecuencia?: string }[]);
     }
 
     const { hijos: _h, referencias: _r, acudientes: _a, especialistas: _e, profesionales: _p, ...rest } =
-      data;
+      clean;
     const clinica = { ...(rest['clinica'] as object) };
     if (clinica && typeof clinica === 'object' && 'medicamentos' in clinica) {
       delete (clinica as Record<string, unknown>)['medicamentos'];
     }
     this.form.patchValue({ ...rest, clinica });
-    this.normalizeFirmasFromRecord(data);
+    this.initEscalasIfNeeded();
+    this.normalizeFirmasFromRecord(clean);
     this.ensureDefaultRows();
   }
 
@@ -619,8 +665,11 @@ export class ClinicalFormService {
       delete revision['frecuenciaRespiratoriaCondicion'];
       delete revision['frecuenciaRespiratoriaObs'];
     }
-    if (revision?.['respiratorio'] && typeof revision['respiratorio'] === 'object') {
-      delete revision['respiratorio'];
+    if (revision?.['respiratorio']) {
+      const resp = revision['respiratorio'];
+      if (typeof resp === 'string') {
+        revision['respiratorio'] = this.normalizeRespiratorioValue(resp);
+      }
     }
 
     const ant = data['antecedentes'] as Record<string, unknown> | undefined;
@@ -631,6 +680,73 @@ export class ClinicalFormService {
       };
       delete ant['caidasPropiaAltura'];
       delete ant['riesgoCaida'];
+    }
+  }
+
+  private normalizeRespiratorioValue(raw: string): Record<string, string> {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('{') && trimmed.includes('=')) {
+      const parsed = this.parseJavaMapString(trimmed);
+      return {
+        sonoridad: parsed['sonoridad'] ?? '',
+        eupnea: parsed['eupnea'] ?? '',
+        bradipnea: parsed['bradipnea'] ?? '',
+        taquipnea: parsed['taquipnea'] ?? '',
+      };
+    }
+    return {
+      sonoridad: trimmed,
+      eupnea: '',
+      bradipnea: '',
+      taquipnea: '',
+    };
+  }
+
+  private parseJavaMapString(raw: string): Record<string, string> {
+    let inner = raw.trim();
+    if (inner.startsWith('{')) {
+      inner = inner.slice(1);
+    }
+    if (inner.endsWith('}')) {
+      inner = inner.slice(0, -1);
+    }
+    if (!inner.trim()) {
+      return {};
+    }
+    const out: Record<string, string> = {};
+    for (const part of inner.split(/,\s*/)) {
+      const eq = part.indexOf('=');
+      if (eq <= 0) {
+        continue;
+      }
+      const key = part.slice(0, eq).trim();
+      const val = part.slice(eq + 1).trim();
+      out[key] = isNullishString(val) ? '' : val;
+    }
+    return out;
+  }
+
+  private migrateLegacyMedicamentoFormula(data: Record<string, unknown>): void {
+    const clinica = data['clinica'] as Record<string, unknown> | undefined;
+    if (!clinica || clinica['soporteFormulaPdf']) {
+      return;
+    }
+    const meds = clinica['medicamentos'];
+    if (!Array.isArray(meds)) {
+      return;
+    }
+    for (const row of meds) {
+      if (!row || typeof row !== 'object') {
+        continue;
+      }
+      const record = row as Record<string, unknown>;
+      if (record['soporteFormulaPdf']) {
+        clinica['soporteFormulaPdf'] = record['soporteFormulaPdf'];
+        clinica['soporteFormulaNombre'] = record['soporteFormulaNombre'] ?? '';
+        delete record['soporteFormulaPdf'];
+        delete record['soporteFormulaNombre'];
+        return;
+      }
     }
   }
 
@@ -703,19 +819,6 @@ export class ClinicalFormService {
     this.addProfesional();
   }
 
-  private recalcImc(): void {
-    const g = this.signosVitales;
-    const peso = parseFloat(g.get('peso')?.value);
-    const tallaCm = parseFloat(g.get('talla')?.value);
-    if (!peso || !tallaCm) {
-      g.get('imc')?.setValue('', { emitEvent: false });
-      return;
-    }
-    const m = tallaCm / 100;
-    const imc = peso / (m * m);
-    g.get('imc')?.setValue(imc.toFixed(1), { emitEvent: false });
-  }
-
   get signosVitales(): FormGroup {
     return this.form.get('signosVitales') as FormGroup;
   }
@@ -764,8 +867,6 @@ export class ClinicalFormService {
       nombre: [''],
       dosis: [''],
       horarios: [''],
-      soporteFormulaPdf: [''],
-      soporteFormulaNombre: [''],
     });
   }
 

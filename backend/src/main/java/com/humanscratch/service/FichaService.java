@@ -59,6 +59,7 @@ public class FichaService {
         ficha.setObservacionesGenerales(observaciones);
         ficha.setUpdatedAt(now);
         fichaRepository.save(ficha);
+        fichaRepository.flush();
 
         formPersistence.persist(id, data);
 

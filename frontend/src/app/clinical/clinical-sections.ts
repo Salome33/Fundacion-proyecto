@@ -52,12 +52,6 @@ export const CLINICAL_NAV_SECTIONS: IntakeSectionDef[] = [
     scrollAnchor: 'valoracion-clinica',
   },
   {
-    path: 'patologias',
-    label: 'Patologías diagnosticadas',
-    description: 'Enfermedades crónicas y diagnósticos relevantes.',
-    scrollAnchor: 'patologias',
-  },
-  {
     path: 'alergias',
     label: 'Alergias',
     description: 'Alergias a medicamentos, alimentos y otras.',
@@ -213,7 +207,6 @@ const SCROLL_ANCHOR_MAP: Record<string, string> = {
   'referencias-personales': 'referencias',
   acudiente: 'acudiente',
   'valoracion-clinica': 'valoracion-clinica',
-  patologias: 'patologias',
   alergias: 'alergias',
   medicamentos: 'medicamentos',
   'practicas-riesgo': 'practicas-riesgo',

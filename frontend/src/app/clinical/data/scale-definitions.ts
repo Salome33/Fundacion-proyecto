@@ -8,6 +8,8 @@ export interface ScaleOption {
 export interface ScaleItemDef {
   id: string;
   label: string;
+  /** Subtítulo de grupo (p. ej. «Longitud y altura del paso»); se muestra una vez por bloque consecutivo. */
+  sectionLabel?: string;
   options: ScaleOption[];
 }
 
@@ -115,11 +117,20 @@ export const BARTHEL_SCALE: ScaleDef = {
     },
     {
       id: 'trasladarse',
-      label: 'Trasladarse (silla ↔ cama)',
+      label: 'Trasladarse',
       options: [
-        { label: 'Independiente', score: 15 },
-        { label: 'Mínima ayuda o supervisión', score: 10 },
-        { label: 'Gran ayuda pero se mantiene sentado', score: 5 },
+        {
+          label: 'Independiente para ir del sillón a la cama',
+          score: 15,
+        },
+        {
+          label: 'Mínima ayuda física o supervisión para hacerlo',
+          score: 10,
+        },
+        {
+          label: 'Necesita gran ayuda, pero es capaz de mantenerse sentado solo',
+          score: 5,
+        },
         { label: 'Dependiente', score: 0 },
       ],
     },
@@ -166,81 +177,128 @@ export const LAWTON_SCALE: ScaleDef = {
   items: [
     {
       id: 'telefono',
-      label: 'A. Capacidad para usar el teléfono',
+      label: 'Utiliza el teléfono',
       options: [
-        { label: 'Usa el teléfono por iniciativa propia', score: 1 },
-        { label: 'Marca números conocidos', score: 1 },
-        { label: 'Contesta pero no marca', score: 1 },
+        {
+          label:
+            'Utiliza el teléfono a iniciativa propia, busca y marca los números, etc.',
+          score: 1,
+        },
+        { label: 'Marca unos cuantos números bien conocidos', score: 1 },
+        { label: 'Contesta el teléfono pero no marca', score: 1 },
         { label: 'No usa el teléfono', score: 0 },
       ],
     },
     {
       id: 'compras',
-      label: 'B. Ir de compras',
+      label: 'Ir de compras',
       options: [
-        { label: 'Todas las compras con independencia', score: 1 },
-        { label: 'Compras pequeñas solo', score: 0 },
-        { label: 'Necesita compañía para comprar', score: 0 },
-        { label: 'Incapaz de ir de compras', score: 0 },
+        { label: 'Realiza todas las compras necesarias con independencia', score: 1 },
+        { label: 'Compra con independencia pequeñas cosas', score: 0 },
+        { label: 'Necesita compañía para realizar cualquier compra', score: 0 },
+        { label: 'Completamente incapaz de ir de compras', score: 0 },
       ],
     },
     {
       id: 'comida',
-      label: 'C. Preparación de la comida',
+      label: 'Preparación de la comida',
       options: [
-        { label: 'Planea, prepara y sirve solo', score: 1 },
-        { label: 'Prepara si le dan ingredientes', score: 0 },
-        { label: 'Calienta/sirve sin dieta adecuada', score: 0 },
-        { label: 'Necesita que le preparen la comida', score: 0 },
+        {
+          label: 'Planea, prepara y sirve las comidas adecuadas con independencia',
+          score: 1,
+        },
+        { label: 'Prepara las comidas si se le dan los ingredientes', score: 0 },
+        {
+          label: 'Calienta y sirve las comidas pero no mantiene una dieta adecuada',
+          score: 0,
+        },
+        { label: 'Necesita que se le prepare y sirva la comida', score: 0 },
       ],
     },
     {
       id: 'casa',
-      label: 'D. Cuidar la casa',
+      label: 'Cuidar la casa',
       options: [
-        { label: 'Solo o ayuda ocasional (trabajos pesados)', score: 1 },
-        { label: 'Tareas ligeras (fregar, cama)', score: 1 },
-        { label: 'Ligeras pero limpieza no aceptable', score: 1 },
-        { label: 'Ayuda en todas las tareas', score: 1 },
-        { label: 'No participa', score: 0 },
+        {
+          label:
+            'Cuida la casa sólo o con ayuda ocasional (ej. trabajos pesados)',
+          score: 1,
+        },
+        {
+          label: 'Realiza tareas domésticas ligeras como fregar o hacer cama',
+          score: 1,
+        },
+        {
+          label:
+            'Realiza tareas domésticas ligeras pero no puede mantener un nivel de limpieza aceptable',
+          score: 1,
+        },
+        { label: 'Necesita ayuda en todas las tareas de la casa', score: 1 },
+        { label: 'No participa en ninguna tarea doméstica', score: 0 },
       ],
     },
     {
       id: 'ropa',
-      label: 'E. Lavado de ropa',
+      label: 'Lavado de ropa',
       options: [
-        { label: 'Lavado completo personal', score: 1 },
+        { label: 'Realiza completamente el lavado de ropa personal', score: 1 },
         { label: 'Lava ropa pequeña', score: 1 },
-        { label: 'Otro se ocupa del lavado', score: 0 },
+        { label: 'Necesita que otro se ocupe del lavado', score: 0 },
       ],
     },
     {
       id: 'transporte',
-      label: 'F. Medio de transporte',
+      label: 'Medio de transporte',
       options: [
-        { label: 'Transporte público o conduce solo', score: 1 },
-        { label: 'Taxi propio, no transporte público', score: 1 },
-        { label: 'Público solo con acompañante', score: 1 },
-        { label: 'Solo taxi/auto con ayuda', score: 0 },
+        {
+          label: 'Viaja con independencia en transportes públicos o conduce su coche',
+          score: 1,
+        },
+        {
+          label:
+            'Capaz de organizar su propio transporte en taxi, pero no usa transporte público',
+          score: 1,
+        },
+        {
+          label: 'Viaja en transportes públicos si le acompaña otra persona',
+          score: 1,
+        },
+        { label: 'Sólo viaja en taxi o automóvil con ayuda de otros', score: 0 },
         { label: 'No viaja', score: 0 },
       ],
     },
     {
       id: 'medicacion',
-      label: 'G. Responsabilidad sobre la medicación',
+      label: 'Responsabilidad sobre la medicación',
       options: [
-        { label: 'Toma medicación correcta solo', score: 1 },
-        { label: 'Toma si le preparan dosis', score: 0 },
-        { label: 'No es capaz de responsabilizarse', score: 0 },
+        {
+          label:
+            'Es responsable en el uso de la medicación, dosis y horas correctas',
+          score: 1,
+        },
+        {
+          label:
+            'Toma responsablemente la medicación si se le prepara con anticipación en dosis preparadas',
+          score: 0,
+        },
+        { label: 'No es capaz de responsabilizarse de su propia medicación', score: 0 },
       ],
     },
     {
       id: 'dinero',
-      label: 'H. Capacidad de utilizar el dinero',
+      label: 'Capacidad de utilizar el dinero',
       options: [
-        { label: 'Finanzas independientes', score: 1 },
-        { label: 'Gastos diarios; ayuda en banco', score: 1 },
-        { label: 'Incapaz de manejar dinero', score: 0 },
+        {
+          label:
+            'Maneja los asuntos financieros con independencia, recoge y conoce sus ingresos',
+          score: 1,
+        },
+        {
+          label:
+            'Maneja los gastos cotidianos pero necesita ayuda para ir al banco, grandes gastos, etc.',
+          score: 1,
+        },
+        { label: 'Incapaz de manejar el dinero', score: 0 },
       ],
     },
   ],
@@ -249,40 +307,128 @@ export const LAWTON_SCALE: ScaleDef = {
 };
 
 /** Tinetti — equilibrio (15) + marcha (12); items con scores variables. */
+/** Bloque visual: ítem suelto o grupo bajo un mismo subtítulo (p. ej. longitud y altura del paso). */
+export interface TinettiRenderBlock {
+  id: string;
+  sectionLabel?: string;
+  label?: string;
+  items: ScaleItemDef[];
+}
+
+export function tinettiBuildRenderBlocks(items: ScaleItemDef[]): TinettiRenderBlock[] {
+  const blocks: TinettiRenderBlock[] = [];
+  let i = 0;
+  while (i < items.length) {
+    const item = items[i];
+    if (item.sectionLabel) {
+      const section = item.sectionLabel;
+      const group: ScaleItemDef[] = [];
+      while (i < items.length && items[i].sectionLabel === section) {
+        group.push(items[i]);
+        i++;
+      }
+      blocks.push({ id: `section_${group[0].id}`, sectionLabel: section, items: group });
+    } else {
+      blocks.push({ id: item.id, label: item.label, items: [item] });
+      i++;
+    }
+  }
+  return blocks;
+}
+
+export function tinettiMaxScore(items: ScaleItemDef[]): number {
+  return items.reduce(
+    (sum, it) => sum + Math.max(...it.options.map((o) => o.score)),
+    0,
+  );
+}
+
+function tinettiItemHasDuplicateScores(item: ScaleItemDef): boolean {
+  const scores = item.options.map((o) => o.score);
+  return new Set(scores).size !== scores.length;
+}
+
+/** Puntuación de un ítem según valor guardado (índice de opción o puntuación legacy). */
+export function tinettiResolveScore(item: ScaleItemDef, raw: unknown): number {
+  if (raw == null || raw === '') return 0;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return 0;
+  if (tinettiItemHasDuplicateScores(item)) {
+    const idx = Math.trunc(n);
+    return item.options[idx]?.score ?? 0;
+  }
+  if (Number.isInteger(n) && n >= 0 && n < item.options.length) {
+    return item.options[n].score;
+  }
+  return n;
+}
+
+export function tinettiTotalFromItems(
+  items: ScaleItemDef[],
+  getValue: (itemId: string) => unknown,
+): number {
+  return items.reduce(
+    (sum, it) => sum + tinettiResolveScore(it, getValue(it.id)),
+    0,
+  );
+}
+
+/** Índice de opción seleccionada para marcar el radio correcto. */
+export function tinettiSelectedOptionIndex(item: ScaleItemDef, raw: unknown): number | null {
+  if (raw == null || raw === '') return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return null;
+  if (tinettiItemHasDuplicateScores(item)) {
+    const idx = Math.trunc(n);
+    return idx >= 0 && idx < item.options.length ? idx : null;
+  }
+  if (Number.isInteger(n) && n >= 0 && n < item.options.length) {
+    return n;
+  }
+  const idx = item.options.findIndex((o) => o.score === n);
+  return idx >= 0 ? idx : null;
+}
+
 export const TINETTI_BALANCE: ScaleItemDef[] = [
   {
     id: 'eq_sentado',
     label: 'Equilibrio sentado',
     options: [
-      { label: 'Se inclina o desliza hacia delante en la silla', score: 0 },
-      { label: 'Se mantiene firme y seguro en la silla', score: 1 },
+      { label: 'Se inclina o desliza en la silla', score: 0 },
+      { label: 'Firme y seguro', score: 1 },
     ],
   },
   {
     id: 'levantarse',
     label: 'Levantarse',
     options: [
-      { label: 'Incapaz de levantarse sin ayuda', score: 0 },
-      { label: 'Capaz de levantarse usando las manos o apoyándose en el brazo de la silla', score: 1 },
-      { label: 'Capaz de levantarse sin usar las manos', score: 2 },
+      { label: 'Incapaz sin ayuda', score: 0 },
+      { label: 'Capaz utilizando los brazos como ayuda', score: 1 },
+      { label: 'Capaz sin utilizar los brazos', score: 2 },
     ],
   },
   {
     id: 'intentos_levantarse',
     label: 'Intentos de levantarse',
     options: [
-      { label: 'Incapaz de levantarse sin ayuda', score: 0 },
-      { label: 'Capaz de levantarse, pero necesita más de un intento', score: 1 },
-      { label: 'Capaz de levantarse al primer intento', score: 2 },
+      { label: 'Incapaz sin ayuda', score: 0 },
+      { label: 'Capaz, pero necesita más de un intento', score: 1 },
+      { label: 'Capaz de levantarse con un intento', score: 2 },
     ],
   },
   {
     id: 'eq_inmediato',
-    label: 'Equilibrio inmediato al levantarse',
+    label: 'Equilibrio inmediato (5) al levantarse',
     options: [
-      { label: 'Inestable; tambalea, se mueve los pies, balancea el tronco', score: 0 },
-      { label: 'Estable, pero se apoya en andador, bastón u otra ayuda', score: 1 },
-      { label: 'Estable sin apoyo de bastón ni otras ayudas', score: 2 },
+      {
+        label: 'Inestable (se tambalea, mueve los pies, marcado balanceo del tronco)',
+        score: 0,
+      },
+      {
+        label: 'Estable, pero usa andador, bastón, muletas u otros objetos',
+        score: 1,
+      },
+      { label: 'Estable sin usar bastón u otros soportes', score: 2 },
     ],
   },
   {
@@ -290,22 +436,33 @@ export const TINETTI_BALANCE: ScaleItemDef[] = [
     label: 'Equilibrio en bipedestación',
     options: [
       { label: 'Inestable', score: 0 },
-      { label: 'Estable, pero con base amplia o apoyándose en ayuda externa', score: 1 },
-      { label: 'Estable con base estrecha sin apoyo externo', score: 2 },
+      {
+        label:
+          'Estable con aumento del área de sustentación (los talones separados más de 10 cm.) o usa bastón, andador u otro soporte',
+        score: 1,
+      },
+      {
+        label: 'Base de sustentación estrecha sin ningún soporte',
+        score: 2,
+      },
     ],
   },
   {
     id: 'empujon',
-    label: 'Empujón (ligero empujón en el esternón, con los pies juntos)',
+    label:
+      'Empujón (sujeto en posición firme con los pies lo más juntos posible; el examinador empuja sobre el esternón del paciente con la palma 3 veces)',
     options: [
-      { label: 'Comienza a caer', score: 0 },
-      { label: 'Tambalea, agita los brazos, pero se mantiene en pie', score: 1 },
-      { label: 'Estable', score: 2 },
+      { label: 'Tiende a caerse', score: 0 },
+      {
+        label: 'Se tambalea, se sujeta, pero se mantiene solo',
+        score: 1,
+      },
+      { label: 'Firme', score: 2 },
     ],
   },
   {
     id: 'ojos_cerrados',
-    label: 'Ojos cerrados (con los pies juntos)',
+    label: 'Ojos cerrados (en la posición anterior)',
     options: [
       { label: 'Inestable', score: 0 },
       { label: 'Estable', score: 1 },
@@ -313,19 +470,21 @@ export const TINETTI_BALANCE: ScaleItemDef[] = [
   },
   {
     id: 'giro_360',
-    label: 'Giro 360°',
+    label: 'Giro de 360º',
     options: [
       { label: 'Pasos discontinuos', score: 0 },
-      { label: 'Pasos continuos y estables', score: 1 },
+      { label: 'Pasos continuos', score: 1 },
+      { label: 'Inestable (se agarra o tambalea)', score: 0 },
+      { label: 'Estable', score: 1 },
     ],
   },
   {
     id: 'sentarse',
     label: 'Sentarse',
     options: [
-      { label: 'Inseguro; calcula mal la distancia, cae en la silla', score: 0 },
-      { label: 'Usa las manos o el movimiento no es suave', score: 1 },
-      { label: 'Seguro, movimiento suave y bien controlado', score: 2 },
+      { label: 'Inseguro', score: 0 },
+      { label: 'Usa los brazos o no tiene un movimiento suave', score: 1 },
+      { label: 'Seguro, movimiento suave', score: 2 },
     ],
   },
 ];
@@ -333,99 +492,126 @@ export const TINETTI_BALANCE: ScaleItemDef[] = [
 export const TINETTI_GAIT: ScaleItemDef[] = [
   {
     id: 'inicio_marcha',
-    label: 'Comienzo de la marcha (inmediatamente después de «marcha»)',
+    label: 'Comienzo de la marcha (inmediatamente después de decir «camine»)',
     options: [
-      { label: 'Cualquier vacilación o múltiples intentos para iniciar la marcha', score: 0 },
+      {
+        label: 'Duda o vacila, o múltiples intentos para comenzar',
+        score: 0,
+      },
       { label: 'No vacilante', score: 1 },
     ],
   },
   {
     id: 'paso_der_longitud',
-    label: 'Longitud del paso — pie derecho',
+    sectionLabel: 'Longitud y altura del paso',
+    label: '',
     options: [
       {
-        label: 'El pie derecho no pasa la posición del pie izquierdo con el paso',
+        label:
+          'El pie derecho no sobrepasa al izquierdo con el paso en la fase de balanceo',
         score: 0,
       },
-      {
-        label: 'El pie derecho pasa la posición del pie izquierdo con el paso',
-        score: 1,
-      },
+      { label: 'El pie derecho sobrepasa al izquierdo', score: 1 },
     ],
   },
   {
     id: 'paso_der_altura',
-    label: 'Altura del paso — pie derecho',
+    sectionLabel: 'Longitud y altura del paso',
+    label: '',
     options: [
-      { label: 'El pie derecho no se eleva completamente del suelo', score: 0 },
-      { label: 'El pie derecho se eleva completamente del suelo', score: 1 },
+      {
+        label:
+          'El pie derecho no se levanta completamente del suelo con el paso en la fase del balanceo',
+        score: 0,
+      },
+      { label: 'El pie derecho se levanta completamente', score: 1 },
     ],
   },
   {
     id: 'paso_izq_longitud',
-    label: 'Longitud del paso — pie izquierdo',
+    sectionLabel: 'Longitud y altura del paso',
+    label: '',
     options: [
       {
-        label: 'El pie izquierdo no pasa la posición del pie derecho con el paso',
+        label:
+          'El pie izquierdo no sobrepasa al derecho con el paso en la fase del balanceo',
         score: 0,
       },
-      {
-        label: 'El pie izquierdo pasa la posición del pie derecho con el paso',
-        score: 1,
-      },
+      { label: 'El pie izquierdo sobrepasa al derecho con el paso', score: 1 },
     ],
   },
   {
     id: 'paso_izq_altura',
-    label: 'Altura del paso — pie izquierdo',
+    sectionLabel: 'Longitud y altura del paso',
+    label: '',
     options: [
-      { label: 'El pie izquierdo no se eleva completamente del suelo', score: 0 },
-      { label: 'El pie izquierdo se eleva completamente del suelo', score: 1 },
+      {
+        label:
+          'El pie izquierdo no se levanta completamente del suelo con el paso en la fase de balanceo',
+        score: 0,
+      },
+      { label: 'El pie izquierdo se levanta completamente', score: 1 },
     ],
   },
   {
     id: 'simetria',
     label: 'Simetría del paso',
     options: [
-      { label: 'Las longitudes de los pasos derecho e izquierdo no son iguales', score: 0 },
-      { label: 'Las longitudes de los pasos parecen iguales', score: 1 },
+      {
+        label:
+          'La longitud del paso con el pie derecho e izquierdo es diferente (estimada)',
+        score: 0,
+      },
+      { label: 'Los pasos son iguales en longitud', score: 1 },
     ],
   },
   {
     id: 'continuidad',
     label: 'Continuidad de los pasos',
     options: [
-      { label: 'Se detiene entre pasos', score: 0 },
+      { label: 'Para o hay discontinuidad entre pasos', score: 0 },
       { label: 'Los pasos son continuos', score: 1 },
     ],
   },
   {
     id: 'trayectoria',
-    label: 'Trayectoria (observar el trazado de un pie durante varios pasos)',
+    label:
+      'Trayectoria (estimada en relación con los baldosines del suelo de 30 cm. de diámetro; se observa la desviación de un pie en 3 cm. de distancia)',
     options: [
-      { label: 'Desviación marcada', score: 0 },
-      { label: 'Desviación leve o usa ayuda para la marcha', score: 1 },
-      { label: 'Recta sin ayudas', score: 2 },
+      { label: 'Marcada desviación', score: 0 },
+      {
+        label: 'Desviación moderada o media, o utiliza ayuda',
+        score: 1,
+      },
+      { label: 'Derecho sin utilizar ayudas', score: 2 },
     ],
   },
   {
     id: 'tronco',
     label: 'Tronco',
     options: [
-      { label: 'Balanceo marcado o usa ayuda para la marcha', score: 0 },
-      { label: 'No hay balanceo, pero flexión de rodillas o espalda, o usa los brazos para estabilizarse', score: 1 },
-      { label: 'No hay balanceo, flexión, uso de ayudas ni abducción de brazos', score: 2 },
+      { label: 'Marcado balanceo o utiliza ayudas', score: 0 },
+      {
+        label:
+          'No balanceo, pero hay flexión de rodillas o espalda o extensión hacia fuera de los brazos',
+        score: 1,
+      },
+      { label: 'No balanceo no flexión, ni utiliza ayudas', score: 2 },
     ],
   },
   {
     id: 'postura',
     label: 'Postura en la marcha',
     options: [
-      { label: 'Los talones están separados', score: 0 },
-      { label: 'Los talones casi se tocan mientras camina', score: 1 },
+      { label: 'Talones separados', score: 0 },
+      { label: 'Talones casi se tocan mientras camina', score: 1 },
     ],
   },
 ];
+
+export const TINETTI_BALANCE_MAX = tinettiMaxScore(TINETTI_BALANCE);
+export const TINETTI_GAIT_MAX = tinettiMaxScore(TINETTI_GAIT);
+export const TINETTI_TOTAL_MAX = TINETTI_BALANCE_MAX + TINETTI_GAIT_MAX;
 
 export const PFEIFFER_QUESTIONS: { id: string; label: string; hint?: string }[] = [
   { id: 'q1', label: '¿Cuál es la fecha de hoy?', hint: 'Día, mes y año' },
@@ -434,11 +620,19 @@ export const PFEIFFER_QUESTIONS: { id: string; label: string; hint?: string }[] 
   { id: 'q4', label: '¿Cuál es su teléfono o dirección completa?' },
   { id: 'q5', label: '¿Cuántos años tiene?' },
   { id: 'q6', label: '¿Dónde nació?' },
-  { id: 'q7', label: '¿Nombre del presidente actual?' },
-  { id: 'q8', label: '¿Nombre del presidente anterior?' },
-  { id: 'q9', label: '¿Nombre de soltera de su madre?' },
-  { id: 'q10', label: 'Reste de tres en tres desde 20', hint: 'Cualquier error invalida' },
+  { id: 'q7', label: '¿Cuál es el nombre del presidente?' },
+  { id: 'q8', label: '¿Cuál es el nombre del presidente anterior?' },
+  { id: 'q9', label: '¿Cuál es el nombre de soltera de su madre?' },
+  {
+    id: 'q10',
+    label: 'Reste de tres en tres desde 29',
+    hint: 'Cualquier error hace errónea la respuesta',
+  },
 ];
+
+export function pfeifferResponseKey(questionId: string): string {
+  return `${questionId}Respuesta`;
+}
 
 export function interpretPfeiffer(errors: number): string {
   if (errors <= 2) return 'Valoración cognitiva normal';
@@ -451,99 +645,88 @@ export function interpretPfeiffer(errors: number): string {
 export interface GdsQuestion {
   id: string;
   label: string;
-  detail: string;
+  detail?: string;
   yesScore: number;
+}
+
+export function gdsNoScore(yesScore: number): number {
+  return 1 - yesScore;
 }
 
 export const GDS_QUESTIONS: GdsQuestion[] = [
   {
     id: 'g1',
-    label: '¿Está básicamente satisfecho(a) con su vida?',
-    detail: 'Respuesta «No» sugiere insatisfacción con la vida actual.',
+    label: '¿En general, está satisfecho(a) con su vida?',
     yesScore: 0,
   },
   {
     id: 'g2',
-    label: '¿Ha abandonado muchas de sus actividades e intereses?',
-    detail: 'Respuesta «Sí» indica pérdida de interés o abandono de actividades habituales.',
+    label: '¿Ha abandonado muchas de sus tareas habituales y aficiones?',
     yesScore: 1,
   },
   {
     id: 'g3',
     label: '¿Siente que su vida está vacía?',
-    detail: 'Respuesta «Sí» refleja sensación de vacío existencial.',
     yesScore: 1,
   },
   {
     id: 'g4',
-    label: '¿Se aburre con frecuencia?',
-    detail: 'Respuesta «Sí» indica aburrimiento frecuente en la última semana.',
+    label: '¿Se siente con frecuencia aburrido(a)?',
     yesScore: 1,
   },
   {
     id: 'g5',
-    label: '¿Está de buen humor la mayor parte del tiempo?',
-    detail: 'Respuesta «No» sugiere ánimo bajo de forma persistente.',
+    label: '¿Se encuentra de buen humor la mayor parte del tiempo?',
     yesScore: 0,
   },
   {
     id: 'g6',
-    label: '¿Teme que algo malo le vaya a suceder?',
-    detail: 'Respuesta «Sí» refleja temor o preocupación anticipatoria.',
+    label: '¿Teme que algo malo pueda ocurrirle?',
     yesScore: 1,
   },
   {
     id: 'g7',
     label: '¿Se siente feliz la mayor parte del tiempo?',
-    detail: 'Respuesta «No» indica disminución de la sensación de felicidad.',
     yesScore: 0,
   },
   {
     id: 'g8',
-    label: '¿Se siente a menudo desamparado(a) o desamparada?',
-    detail: 'Respuesta «Sí» refleja sensación de desamparo o falta de apoyo.',
+    label: '¿Con frecuencia se siente desamparado(a), desprotegido(a)?',
     yesScore: 1,
   },
   {
     id: 'g9',
-    label: '¿Prefiere quedarse en casa en lugar de salir y hacer cosas nuevas?',
-    detail: 'Respuesta «Sí» indica retraimiento social o preferencia por permanecer en casa.',
+    label: '¿Prefiere usted quedarse en casa, más que salir y hacer cosas nuevas?',
     yesScore: 1,
   },
   {
     id: 'g10',
-    label: '¿Cree que tiene más problemas de memoria que la mayoría de las personas?',
-    detail: 'Respuesta «Sí» sugiere percepción de deterioro mnésico.',
+    label: '¿Cree que tiene más problemas de memoria que la mayoría de la gente?',
     yesScore: 1,
   },
   {
     id: 'g11',
-    label: '¿Piensa que vivir es maravilloso?',
-    detail: 'Respuesta «No» refleja disminución del entusiasmo por la vida.',
+    label: '¿En estos momentos, piensa que es estupendo estar vivo(a)?',
     yesScore: 0,
   },
   {
     id: 'g12',
-    label: '¿Se siente inútil tal como está ahora?',
-    detail: 'Respuesta «Sí» indica sentimientos de inutilidad.',
+    label: '¿Actualmente se siente un(a) inútil?',
     yesScore: 1,
   },
   {
     id: 'g13',
     label: '¿Se siente lleno(a) de energía?',
-    detail: 'Respuesta «No» sugiere disminución de la energía o vitalidad.',
     yesScore: 0,
   },
   {
     id: 'g14',
-    label: '¿Siente que su situación es desesperada?',
-    detail: 'Respuesta «Sí» refleja sensación de desesperanza.',
+    label: '¿Se siente sin esperanza en este momento?',
     yesScore: 1,
   },
   {
     id: 'g15',
-    label: '¿Cree que la mayoría de las personas están mejor que usted?',
-    detail: 'Respuesta «Sí» indica comparación negativa con los demás.',
+    label: '¿Piensa que la mayoría de la gente está en mejor situación que usted?',
     yesScore: 1,
   },
 ];

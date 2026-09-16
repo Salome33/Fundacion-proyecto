@@ -1,6 +1,7 @@
 <div [formGroup]="form">
-  <section class="section-card" formGroupName="examenFisico">
+  <section class="section-card">
     <h2>Examen físico</h2>
+    <div formGroupName="examenFisico">
     <div class="field-grid">
       @for (
         field of [
@@ -34,29 +35,31 @@
     </label>
     <label><input type="checkbox" formControlName="panalDia" /> Pañal — día</label>
     <label><input type="checkbox" formControlName="panalNoche" /> Pañal — noche</label>
-  </section>
+    </div>
 
-  <section class="section-card" formGroupName="revisionSistemas">
-    <h2>Revisión por sistemas</h2>
-    <div class="field-grid">
-      @for (
-        field of [
-          ['respiratorio', 'Respiratorio'],
-          ['neurologico', 'Neurológico'],
-          ['endocrino', 'Endocrino'],
-          ['musculoEsqueletico', 'Músculo esquelético'],
-          ['hematopoyetico', 'Hematopoyético'],
-          ['linforreticular', 'Linforreticular'],
-          ['psiquiatrico', 'Psiquiátrico'],
-          ['articular', 'Articular'],
-          ['cardiovascular', 'Cardiovascular'],
-          ['gastrointestinal', 'Gastrointestinal'],
-          ['ginecologico', 'Ginecológico'],
-        ];
-        track field[0]
-      ) {
-        <label>{{ field[1] }}<textarea [formControlName]="$any(field[0])"></textarea></label>
-      }
+    <div formGroupName="revisionSistemas" class="exam-regions">
+      <div class="exam-region-block exam-region-block--boxed revision-sistemas-block">
+        <h3 class="exam-region-title">Revisión por sistemas</h3>
+        <div class="revision-sistemas-sections">
+          <div formGroupName="respiratorio" class="entry-card incontinencia-panel revision-respiratorio-panel">
+            <h4 class="exam-region-title revision-sistemas-subtitle">Respiratorio</h4>
+            <div class="field-grid exam-subfields-grid field-grid--row-3 revision-respiratorio-grid">
+              @for (field of respiratorioRevisionFields; track field.id) {
+                <div class="exam-subfield-item">
+                  <h4 class="exam-subfield-title">{{ field.label }}</h4>
+                  <div class="clinical-field-box clinical-field-box--solo">
+                    <textarea
+                      class="clinical-field-control"
+                      [formControlName]="field.id"
+                      rows="2"
+                    ></textarea>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -108,9 +111,9 @@
       <label>FC<input formControlName="fc" /></label>
       <label>FR<input formControlName="fr" /></label>
       <label>SPO2<input formControlName="spo2" /></label>
-      <label>Peso (kg)<input type="number" formControlName="peso" /></label>
-      <label>Talla (cm)<input type="number" formControlName="talla" /></label>
-      <label>IMC<input formControlName="imc" type="number" step="0.1" /></label>
+      <label>Peso (kg)<input formControlName="peso" type="text" inputmode="decimal" class="input-plain-number" /></label>
+      <label>Talla (cm)<input formControlName="talla" type="text" inputmode="decimal" class="input-plain-number" /></label>
+      <label>IM<input formControlName="imc" type="text" inputmode="decimal" class="input-plain-number" /></label>
     </div>
     <h3>Descripción gráfica del cuerpo</h3>
     <div class="info-box">
@@ -121,80 +124,46 @@
     ></label>
   </section>
 
+  <label class="field-full section-card"
+    >Observaciones escalas<textarea formControlName="escalasObservaciones" rows="3"></textarea
+  ></label>
+
   <section class="section-card" formGroupName="escalas">
     <h2>Escalas gerontogeriátricas</h2>
-    <label class="field-full"
-      >Observaciones<textarea formControlName="escalasObservaciones" rows="3"></textarea
-    ></label>
-
     <app-scale-form [scale]="barthel" [group]="$any(escalasGroup.get('barthel'))" />
     <app-scale-form [scale]="lawton" [group]="$any(escalasGroup.get('lawton'))" />
 
     <div class="scale-block">
       <h3>Tinetti — Equilibrio</h3>
       <p class="scale-sub">{{ tinettiBalanceIntro }}</p>
-      <div [formGroup]="tinettiBalanceGroup()">
-      <ul class="scale-question-list">
-        @for (item of tinettiBalance; track item.id) {
-          <li class="scale-question-item scale-question-item--tinetti">
-            <p class="scale-question-text">{{ item.label }}</p>
-            <div class="scale-question-options scale-question-options--stack">
-              @for (opt of item.options; track opt.label) {
-                <label class="scale-question-option">
-                  <input
-                    type="radio"
-                    [name]="'tb_' + item.id"
-                    [checked]="tinettiBalanceGroup().get(item.id)?.value === opt.score"
-                    (change)="setTinetti('balance', item.id, opt.score)"
-                  />
-                  <span class="scale-option-label">{{ opt.label }}</span>
-                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
-                    opt.score
-                  }}</span>
-                </label>
-              }
-            </div>
-          </li>
-        }
-      </ul>
-      <p class="scale-total"><strong>Total equilibrio: {{ tinettiTotal('balance') }} / 15</strong></p>
-      </div>
+      <app-tinetti-scale-list
+        [items]="tinettiBalance"
+        [group]="tinettiBalanceGroup()"
+        namePrefix="tb"
+        [useChangeHandler]="true"
+        (scorePick)="setTinetti('balance', $event.itemId, $event.optionIndex)"
+      />
+      <p class="scale-total">
+        <strong>Total equilibrio: {{ tinettiTotal('balance') }} / {{ tinettiBalanceMax }}</strong>
+      </p>
     </div>
 
     <div class="scale-block">
       <h3>Tinetti — Marcha</h3>
       <p class="scale-sub">{{ tinettiGaitIntro }}</p>
-      <div [formGroup]="tinettiGaitGroup()">
-      <ul class="scale-question-list">
-        @for (item of tinettiGait; track item.id) {
-          <li class="scale-question-item scale-question-item--tinetti">
-            <p class="scale-question-text">{{ item.label }}</p>
-            <div class="scale-question-options scale-question-options--stack">
-              @for (opt of item.options; track opt.label) {
-                <label class="scale-question-option">
-                  <input
-                    type="radio"
-                    [name]="'tg_' + item.id"
-                    [checked]="tinettiGaitGroup().get(item.id)?.value === opt.score"
-                    (change)="setTinetti('gait', item.id, opt.score)"
-                  />
-                  <span class="scale-option-label">{{ opt.label }}</span>
-                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + opt.score">{{
-                    opt.score
-                  }}</span>
-                </label>
-              }
-            </div>
-          </li>
-        }
-      </ul>
+      <app-tinetti-scale-list
+        [items]="tinettiGait"
+        [group]="tinettiGaitGroup()"
+        namePrefix="tg"
+        [useChangeHandler]="true"
+        (scorePick)="setTinetti('gait', $event.itemId, $event.optionIndex)"
+      />
       <p class="scale-total">
         <strong
-          >Marcha: {{ tinettiTotal('gait') }} / 12 · Total:
-          {{ tinettiTotal('balance') + tinettiTotal('gait') }} / 27</strong
+          >Marcha: {{ tinettiTotal('gait') }} / {{ tinettiGaitMax }} · Total:
+          {{ tinettiTotal('balance') + tinettiTotal('gait') }} / {{ tinettiTotalMax }}</strong
         >
       </p>
-      </div>
     </div>
 
     <div class="scale-block">
@@ -213,6 +182,12 @@
                   }
                 </span>
               </label>
+              <input
+                class="scale-pfeiffer-response"
+                type="text"
+                [formControlName]="q.id + 'Respuesta'"
+                [attr.aria-label]="'Respuesta del adulto mayor: ' + q.label"
+              />
             </li>
           }
         </ul>
@@ -230,14 +205,24 @@
           @for (q of gdsQ; track q.id) {
             <li class="scale-question-item scale-question-item--gds">
               <p class="scale-question-text">{{ q.label }}</p>
-              <p class="scale-question-detail">{{ q.detail }}</p>
+              @if (q.detail) {
+                <p class="scale-question-detail">{{ q.detail }}</p>
+              }
               <div class="scale-question-options scale-question-options--stack">
-                <label class="scale-question-option"
-                  ><input type="radio" [formControlName]="q.id" value="si" /> Sí</label
-                >
-                <label class="scale-question-option"
-                  ><input type="radio" [formControlName]="q.id" value="no" /> No</label
-                >
+                <label class="scale-question-option">
+                  <input type="radio" [formControlName]="q.id" value="si" />
+                  <span class="scale-option-label">Sí</span>
+                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + q.yesScore">{{
+                    q.yesScore
+                  }}</span>
+                </label>
+                <label class="scale-question-option">
+                  <input type="radio" [formControlName]="q.id" value="no" />
+                  <span class="scale-option-label">No</span>
+                  <span class="scale-option-score" [attr.aria-label]="'Puntuación ' + gdsNoScore(q.yesScore)">{{
+                    gdsNoScore(q.yesScore)
+                  }}</span>
+                </label>
               </div>
             </li>
           }

@@ -114,6 +114,10 @@ export class IntakeSectionPageComponent implements OnInit {
     return this.formApi.medicamentos;
   }
 
+  get clinicaGroup(): FormGroup {
+    return this.form.get('clinica') as FormGroup;
+  }
+
   get especialistas(): FormArray {
     return this.form.get('especialistas') as FormArray;
   }
@@ -134,6 +138,9 @@ export class IntakeSectionPageComponent implements OnInit {
     }
     const v = g?.get(parts[parts.length - 1])?.value;
     if (v === null || v === undefined || v === '') {
+      return '—';
+    }
+    if (typeof v === 'string' && (v.trim() === 'null' || v.trim() === 'undefined')) {
       return '—';
     }
     if (typeof v === 'boolean') {
@@ -242,17 +249,50 @@ export class IntakeSectionPageComponent implements OnInit {
   ];
 
   readonly familiarFields: { key: string; label: string; area?: boolean }[] = [
-    { key: 'nombreMadre', label: 'Madre' },
-    { key: 'nombrePadre', label: 'Padre' },
-    { key: 'conQuienVive', label: 'Convive con' },
-    { key: 'cuidadorPrincipal', label: 'Cuidador principal' },
-    { key: 'familiaresCercanos', label: 'Familiares cercanos' },
-    { key: 'frecuenciaVisitas', label: 'Frecuencia visitas' },
-    { key: 'relacionFamilia', label: 'Relación familia', area: true },
-    { key: 'decisionEmergencia', label: 'Decisiones emergencia' },
-    { key: 'actividadesSociales', label: 'Actividades sociales', area: true },
-    { key: 'antecedentesMaltrato', label: 'Antecedentes maltrato', area: true },
-    { key: 'expectativas', label: 'Expectativas', area: true },
-    { key: 'razonIngreso', label: 'Razón ingreso', area: true },
+    { key: 'nombrePadre', label: 'Nombre del padre' },
+    { key: 'nombreMadre', label: 'Nombre de la madre' },
+    {
+      key: 'conQuienVive',
+      label: '¿Con quién vive actualmente el adulto mayor?',
+    },
+    {
+      key: 'cuidadorPrincipal',
+      label: '¿Quién es el principal cuidador o responsable de su atención?',
+    },
+    {
+      key: 'familiaresCercanos',
+      label: '¿Cuenta con familiares cercanos? ¿Quiénes son?',
+    },
+    {
+      key: 'relacionFamilia',
+      label: '¿Cómo es la relación el adulto mayor con su familia?',
+      area: true,
+    },
+    {
+      key: 'decisionEmergencia',
+      label: '¿Existe alguna persona responsable de tomar decisiones en caso de emergencia?',
+    },
+    {
+      key: 'actividadesSociales',
+      label: '¿El adulto mayor participa de actividades sociales, comunitarias o religiosas?',
+      area: true,
+    },
+    {
+      key: 'antecedentesMaltrato',
+      label: '¿Presenta antecedentes de abandono, maltrato o negligencia?',
+      area: true,
+    },
+  ];
+
+  readonly hijosExtraFields: { key: string; label: string }[] = [
+    {
+      key: 'expectativas',
+      label:
+        '¿Qué expectativas tiene la familia o el adulto mayor respecto a la atención que recibirá?',
+    },
+    {
+      key: 'razonIngreso',
+      label: '¿Cuál es la razón principal por la que solicita el ingreso a la institución?',
+    },
   ];
 }

@@ -70,6 +70,14 @@
           }
           @case ('personal') {
             <div formGroupName="personal" class="personal-with-photo">
+              <div class="photo-attach-col">
+                <app-photo-attach
+                  formControlName="foto"
+                  header="Anexar foto"
+                  sizeHint="3,5 × 4,5 cm"
+                  hint="Anexar foto del adulto mayor"
+                />
+              </div>
               <div class="field-grid">
                 @for (f of personalFields; track f.key) {
                   <label [class.field-full]="f.key === 'nombreApellidos'"
@@ -87,14 +95,6 @@
                     }
                   </label>
                 }
-              </div>
-              <div class="photo-attach-col">
-                <app-photo-attach
-                  formControlName="foto"
-                  header="Anexar foto"
-                  sizeHint="3,5 × 4,5 cm"
-                  hint="Anexar foto del adulto mayor"
-                />
               </div>
             </div>
             <button type="button" class="btn" (click)="submitSection()">Enviar</button>
@@ -131,6 +131,13 @@
               <label>Correo<input (input)="patchDraft('email', $any($event.target).value)" /></label>
             </div>
             <button type="button" class="btn" (click)="saveDraftToArray('hijo')">Guardar hijo</button>
+            <div formGroupName="familiar" class="field-grid hijos-extra-questions">
+              @for (f of hijosExtraFields; track f.key) {
+                <label class="field-full"
+                  >{{ f.label }}<textarea [formControlName]="f.key" rows="3"></textarea
+                ></label>
+              }
+            </div>
           }
           @case ('referencias') {
             <p><strong>Nueva referencia personal</strong></p>
@@ -172,17 +179,16 @@
               <label>Dosis<input (input)="patchDraft('dosis', $any($event.target).value)" /></label>
               <label>Horarios<input (input)="patchDraft('horarios', $any($event.target).value)" /></label>
             </div>
-            <div class="pdf-attach-col">
-              <app-pdf-attach
-                [ngModel]="draftVal('soporteFormulaPdf')"
-                (ngModelChange)="patchDraft('soporteFormulaPdf', $event)"
-                [fileName]="draftVal('soporteFormulaNombre')"
-                (fileNameChange)="patchDraft('soporteFormulaNombre', $event)"
-              />
-            </div>
             <button type="button" class="btn" (click)="saveDraftToArray('medicamento')">
               Agregar medicamento
             </button>
+            <div class="pdf-attach-col" formGroupName="clinica">
+              <app-pdf-attach
+                formControlName="soporteFormulaPdf"
+                [fileName]="clinicaGroup.get('soporteFormulaNombre')?.value"
+                (fileNameChange)="clinicaGroup.patchValue({ soporteFormulaNombre: $event })"
+              />
+            </div>
             <button type="button" class="btn btn-secondary" (click)="closeEditor()">Cerrar</button>
           }
           @case ('medicamentos') {
@@ -194,13 +200,6 @@
                       <label>Nombre<input formControlName="nombre" /></label>
                       <label>Dosis<input formControlName="dosis" /></label>
                       <label>Horarios<input formControlName="horarios" /></label>
-                    </div>
-                    <div class="pdf-attach-col">
-                      <app-pdf-attach
-                        formControlName="soporteFormulaPdf"
-                        [fileName]="$any(m).get('soporteFormulaNombre')?.value"
-                        (fileNameChange)="$any(m).patchValue({ soporteFormulaNombre: $event })"
-                      />
                     </div>
                     @if ($index > 0) {
                       <button
@@ -214,11 +213,18 @@
                   </div>
                 }
               </div>
-            </div>
-            <div class="section-action-row">
-              <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
-                + Agregar medicamento
-              </button>
+              <div class="section-action-row">
+                <button type="button" class="btn btn-secondary" (click)="formApi.addMedicamento()">
+                  + Agregar medicamento
+                </button>
+              </div>
+              <div class="pdf-attach-col">
+                <app-pdf-attach
+                  formControlName="soporteFormulaPdf"
+                  [fileName]="clinicaGroup.get('soporteFormulaNombre')?.value"
+                  (fileNameChange)="clinicaGroup.patchValue({ soporteFormulaNombre: $event })"
+                />
+              </div>
             </div>
             <button type="button" class="btn" (click)="submitSection()">Enviar</button>
           }
@@ -297,8 +303,9 @@
               <label>FC<input formControlName="fc" /></label>
               <label>FR<input formControlName="fr" /></label>
               <label>SpO₂<input formControlName="spo2" /></label>
-              <label>Peso<input type="number" formControlName="peso" /></label>
-              <label>Talla<input type="number" formControlName="talla" /></label>
+              <label>Peso (kg)<input formControlName="peso" type="text" inputmode="decimal" class="input-plain-number" /></label>
+              <label>Talla (cm)<input formControlName="talla" type="text" inputmode="decimal" class="input-plain-number" /></label>
+              <label>IM<input formControlName="imc" type="text" inputmode="decimal" class="input-plain-number" /></label>
             </div>
             <button type="button" class="btn-gold" (click)="submitSection()">Enviar</button>
           }

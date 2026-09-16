@@ -165,14 +165,14 @@ type SortMode = 'recent' | 'oldest' | 'alpha';
                 }
 
                 @if (sectionPath() === 'cuerpo-grafico') {
-                  <div class="body-graphic-layout body-graphic-layout--hub">
+                  <div class="body-graphic-layout body-graphic-layout--hub body-graphic-layout--modal">
                     <aside class="body-graphic-panel">
                       <div class="body-graphic-panel-inner">
                         <label class="clinical-field-box clinical-field-box--observaciones field-observaciones">
                           <span class="clinical-field-box-label">Observaciones</span>
                           <textarea
                             class="observaciones-wide clinical-field-control"
-                            rows="10"
+                            rows="6"
                             [readonly]="!editing()"
                             [ngModel]="observacionesText()"
                             (ngModelChange)="onObservacionesChange($event)"
@@ -187,9 +187,7 @@ type SortMode = 'recent' | 'oldest' | 'alpha';
                       </div>
                     </aside>
                     <div class="body-graphic-viewer">
-                      @if (modelViewerOpen()) {
-                        <app-clinical-body-scratch [intakeKey]="rec.id" [markEditable]="editing()" />
-                      }
+                      <app-clinical-body-scratch [intakeKey]="rec.id" [markEditable]="editing()" />
                     </div>
                   </div>
                 } @else if (editing()) {
@@ -271,7 +269,6 @@ export class SectionHubComponent {
   qId = '';
   sortMode: SortMode = 'recent';
   observacionesText = signal('');
-  modelViewerOpen = signal(false);
 
   meta = computed(() => navSectionByPath(this.sectionPath()));
 
@@ -357,7 +354,6 @@ export class SectionHubComponent {
       this.selectedId.set(null);
       this.editing.set(false);
       this.saveMsg.set('');
-      this.modelViewerOpen.set(false);
     });
   }
 
@@ -369,14 +365,12 @@ export class SectionHubComponent {
     this.selectedId.set(null);
     this.editing.set(false);
     this.saveMsg.set('');
-    this.modelViewerOpen.set(false);
     this.formApi.form.enable({ emitEvent: false });
   }
 
   select(id: string): void {
     this.editing.set(false);
     this.saveMsg.set('');
-    this.modelViewerOpen.set(false);
     this.selectedId.set(id);
     this.store.open(id);
     this.formApi.initEscalasIfNeeded();
@@ -386,7 +380,7 @@ export class SectionHubComponent {
     const obs = (rec?.data?.['descripcionCuerpoObservaciones'] as string | undefined) ?? '';
     this.observacionesText.set(obs);
     if (this.sectionPath() === 'cuerpo-grafico') {
-      setTimeout(() => this.modelViewerOpen.set(true), 150);
+      this.scheduleBodyScratchRefresh();
     }
   }
 
@@ -402,9 +396,7 @@ export class SectionHubComponent {
     this.editing.set(true);
     this.saveMsg.set('');
     if (this.sectionPath() === 'cuerpo-grafico') {
-      if (!this.modelViewerOpen()) {
-        setTimeout(() => this.modelViewerOpen.set(true), 150);
-      }
+      this.scheduleBodyScratchRefresh();
       queueMicrotask(() => this.bodyScratch?.reloadFromSaved());
     }
   }
@@ -437,16 +429,20 @@ export class SectionHubComponent {
         setTimeout(() => this.saveMsg.set(''), 3500);
       },
       error: () => {
-        this.editing.set(false);
-        this.formApi.form.disable({ emitEvent: false });
-        this.saveMsg.set('Información guardada localmente. No se pudo sincronizar con el servidor.');
-        setTimeout(() => this.saveMsg.set(''), 3500);
+        this.saveMsg.set(
+          'No se pudo guardar en el servidor. Verifique que PostgreSQL y el backend estén en ejecución.',
+        );
+        setTimeout(() => this.saveMsg.set(''), 5000);
       },
     });
   }
 
   onObservacionesChange(value: string): void {
     this.observacionesText.set(value);
+  }
+
+  private scheduleBodyScratchRefresh(): void {
+    setTimeout(() => this.bodyScratch?.refreshLayout(), 200);
   }
 
   private ensureViewRows(): void {

@@ -21,6 +21,9 @@ function fmt(v: unknown): string {
   if (v === null || v === undefined || v === '') {
     return '—';
   }
+  if (typeof v === 'string' && (v.trim() === 'null' || v.trim() === 'undefined')) {
+    return '—';
+  }
   if (typeof v === 'boolean') {
     return v ? 'Sí' : 'No';
   }
@@ -31,9 +34,15 @@ function groupHasValues(obj: unknown): boolean {
   if (!obj || typeof obj !== 'object') {
     return false;
   }
-  return Object.values(obj as Record<string, unknown>).some(
-    (v) => v !== '' && v !== null && v !== false,
-  );
+  return Object.values(obj as Record<string, unknown>).some((v) => {
+    if (v === '' || v === null || v === false) {
+      return false;
+    }
+    if (typeof v === 'string' && (v.trim() === 'null' || v.trim() === 'undefined')) {
+      return false;
+    }
+    return true;
+  });
 }
 
 const PERSONAL_KEYS: { key: string; label: string }[] = [
@@ -169,9 +178,10 @@ export function sectionDisplayRows(sectionId: string, data: Record<string, unkno
       break;
     case 'familiar':
       pushGroup('familiar', [
-        { key: 'conQuienVive', label: 'Convive con' },
-        { key: 'cuidadorPrincipal', label: 'Cuidador' },
-        { key: 'razonIngreso', label: 'Razón ingreso' },
+        { key: 'nombrePadre', label: 'Nombre del padre' },
+        { key: 'nombreMadre', label: 'Nombre de la madre' },
+        { key: 'conQuienVive', label: '¿Con quién vive actualmente el adulto mayor?' },
+        { key: 'cuidadorPrincipal', label: 'Cuidador principal' },
       ]);
       break;
     case 'hijos':
@@ -180,6 +190,14 @@ export function sectionDisplayRows(sectionId: string, data: Record<string, unkno
           label: `Hijo ${i + 1}`,
           value: `${h['nombre'] ?? '—'} · ${h['contacto'] ?? ''}`,
         });
+      });
+      rows.push({
+        label: 'Expectativas',
+        value: fmt(g(data, 'familiar.expectativas')),
+      });
+      rows.push({
+        label: 'Razón de ingreso',
+        value: fmt(g(data, 'familiar.razonIngreso')),
       });
       break;
     case 'referencias':
@@ -199,16 +217,18 @@ export function sectionDisplayRows(sectionId: string, data: Record<string, unkno
     case 'clinica':
       rows.push({ label: 'Patología', value: fmt(g(data, 'clinica.patologia')) });
       ((g(data, 'clinica.medicamentos') as Record<string, string>[]) ?? []).forEach((m, i) => {
-        const formula = m['soporteFormulaNombre']?.trim()
-          ? ` · Fórmula: ${m['soporteFormulaNombre']}`
-          : m['soporteFormulaPdf']
-            ? ' · Fórmula PDF adjunta'
-            : '';
         rows.push({
           label: `Medicamento ${i + 1}`,
-          value: `${m['nombre'] ?? '—'} — ${m['dosis'] ?? ''}${formula}`,
+          value: `${m['nombre'] ?? '—'} — ${m['dosis'] ?? ''}`,
         });
       });
+      if (g(data, 'clinica.soporteFormulaPdf') || g(data, 'clinica.soporteFormulaNombre')) {
+        const nombre = fmt(g(data, 'clinica.soporteFormulaNombre'));
+        rows.push({
+          label: 'Soporte fórmula médica',
+          value: nombre !== '—' ? nombre : 'PDF adjunto',
+        });
+      }
       break;
     case 'autopercepcion':
       rows.push({ label: 'Estado de salud', value: fmt(g(data, 'autopercepcion.estadoSalud')) });
@@ -237,7 +257,7 @@ export function sectionDisplayRows(sectionId: string, data: Record<string, unkno
     case 'vitales':
       rows.push({ label: 'TA', value: fmt(g(data, 'signosVitales.ta')) });
       rows.push({ label: 'FC', value: fmt(g(data, 'signosVitales.fc')) });
-      rows.push({ label: 'IMC', value: fmt(g(data, 'signosVitales.imc')) });
+      rows.push({ label: 'IM', value: fmt(g(data, 'signosVitales.imc')) });
       break;
     case 'cuerpo-grafico':
       rows.push({
@@ -298,16 +318,18 @@ export function sectionDisplayRows(sectionId: string, data: Record<string, unkno
       break;
     case 'medicamentos':
       ((g(data, 'clinica.medicamentos') as Record<string, string>[]) ?? []).forEach((m, i) => {
-        const formula = m['soporteFormulaNombre']?.trim()
-          ? ` · Fórmula: ${m['soporteFormulaNombre']}`
-          : m['soporteFormulaPdf']
-            ? ' · Fórmula PDF adjunta'
-            : '';
         rows.push({
           label: `Medicamento ${i + 1}`,
-          value: `${m['nombre'] ?? '—'} — ${m['dosis'] ?? ''} (${m['horarios'] ?? ''})${formula}`,
+          value: `${m['nombre'] ?? '—'} — ${m['dosis'] ?? ''} (${m['horarios'] ?? ''})`,
         });
       });
+      if (g(data, 'clinica.soporteFormulaPdf') || g(data, 'clinica.soporteFormulaNombre')) {
+        const nombre = fmt(g(data, 'clinica.soporteFormulaNombre'));
+        rows.push({
+          label: 'Soporte fórmula médica',
+          value: nombre !== '—' ? nombre : 'PDF adjunto',
+        });
+      }
       break;
     case 'anamnesis':
       rows.push({ label: 'Aspecto', value: fmt(g(data, 'autopercepcion.anamnesisAspecto')) });
@@ -317,7 +339,26 @@ export function sectionDisplayRows(sectionId: string, data: Record<string, unkno
     case 'condicion-general':
       rows.push({ label: 'Higiénico', value: fmt(g(data, 'autopercepcion.higienico')) });
       rows.push({ label: 'Nutricional', value: fmt(g(data, 'autopercepcion.nutricional')) });
-      rows.push({ label: 'Movilidad', value: fmt(g(data, 'autopercepcion.ayudaMovilizarse')) });
+      rows.push({
+        label: 'Ayuda para movilizarse',
+        value: fmt(g(data, 'autopercepcion.ayudaMovilizarse')),
+      });
+      rows.push({
+        label: 'Inmovilización',
+        value: fmt(g(data, 'autopercepcion.inmovilizacion')),
+      });
+      rows.push({
+        label: 'Autoriza inmovilización',
+        value: fmt(g(data, 'autopercepcion.autorizaInmovilizacion')),
+      });
+      rows.push({ label: 'Camina solo', value: fmt(g(data, 'autopercepcion.caminaSolo')) });
+      rows.push({ label: 'Camina con bastón', value: fmt(g(data, 'autopercepcion.caminaBaston')) });
+      rows.push({
+        label: 'Silla de ruedas',
+        value: fmt(g(data, 'autopercepcion.sillaRuedas')),
+      });
+      rows.push({ label: 'MSS', value: fmt(g(data, 'autopercepcion.mss')) });
+      rows.push({ label: 'MII', value: fmt(g(data, 'autopercepcion.mii')) });
       break;
     case 'practicas-riesgo':
       ((g(data, 'riesgoSalud') as Record<string, string>[]) ?? []).forEach((r, i) => {

@@ -28,6 +28,10 @@ call "%~dp0start-postgres.cmd"
 if errorlevel 1 exit /b 1
 
 echo.
+echo Liberando puerto 8080 si quedo un backend anterior...
+call "%~dp0stop-backend.cmd"
+
+echo.
 echo Iniciando backend Spring Boot en nueva ventana (puerto 8080)...
 start "Historia Clinica - Backend" cmd /k "%~dp0docker-run-backend.cmd"
 
